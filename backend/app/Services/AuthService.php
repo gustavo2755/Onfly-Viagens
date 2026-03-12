@@ -17,11 +17,15 @@ class AuthService implements AuthServiceInterface
      */
     public function login(string $email, string $password): array
     {
-        if (!Auth::attempt(['email' => $email, 'password' => $password])) {
+        if (!Auth::guard('web')->attempt(['email' => $email, 'password' => $password])) {
             throw new AuthenticationException('Invalid credentials.');
         }
 
-        $user = Auth::user();
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
+
+        $user = Auth::guard('web')->user();
         $token = $user->createToken('api-token')->plainTextToken;
 
         return [
@@ -39,6 +43,12 @@ class AuthService implements AuthServiceInterface
         if ($token && method_exists($token, 'delete')) {
             $token->delete();
         }
+
         Auth::guard('web')->logout();
+
+        if (request()->hasSession()) {
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
     }
 }

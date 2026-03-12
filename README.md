@@ -165,8 +165,8 @@ php artisan migrate:fresh --seed   # reset completo
 
 | Role | Email | Senha |
 |------|-------|-------|
-| Admin | admin@travelorders.test | password |
-| Usuário | user@travelorders.test | password |
+| Admin | admin@admin.com | password |
+| Usuário | user@user.com | password |
 
 ## Funcionalidades
 
