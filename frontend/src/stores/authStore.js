@@ -70,6 +70,12 @@ export const useAuthStore = defineStore('auth', {
         if (this.token) {
           await logout()
         }
+      } catch (error) {
+        const status = error?.response?.status
+
+        if (status === 401 || status === 403) {
+          return
+        }
       } finally {
         this.clearSessionState()
       }
