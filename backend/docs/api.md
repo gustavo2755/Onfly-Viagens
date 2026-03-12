@@ -20,6 +20,10 @@ Token Bearer via Sanctum. Enviar header: `Authorization: Bearer {token}`.
 - `admin`: pode listar todos os pedidos, aprovar/cancelar status, ver dashboard
 - `user`: so ve e cria os proprios pedidos
 
+## Usuarios (admin)
+
+- `GET /api/users` (auth, admin) - Lista usuarios para filtro de pedidos
+
 ## Travel Orders
 
 - `GET /api/travel-orders` (auth)
@@ -77,7 +81,7 @@ Valores permitidos: `approved`, `cancelled`. Apenas admin.
 
 - `status` - requested | approved | cancelled
 - `destination` - string 2-120 chars
-- `created_from`, `created_to` - datas (created_to >= created_from)
+- `user_id` - ID do usuario (apenas admin, filtra pedidos do usuario)
 - `departure_from`, `departure_to` - datas (departure_to >= departure_from)
 - `page`, `per_page` - paginacao (per_page max 50)
 
@@ -111,6 +115,7 @@ Item de `data`:
 ## Estrutura do TravelOrder (data)
 
 - `id`, `user_id`, `requester_name`, `destination`, `departure_date`, `return_date`, `status`, `created_at`, `updated_at`
+- `departure_date_br`, `return_date_br` - datas em formato BR (dd/mm/yyyy) para exibicao
 - No show: inclui `user` com `id`, `name`, `email`, `role`
 
 ## Dashboard (data)

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TravelOrderStatusEnum;
+use App\Traits\FormatsDateBr;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TravelOrder extends Model
 {
-    /** @use HasFactory<\Database\Factories\TravelOrderFactory> */
+    use FormatsDateBr;
     use HasFactory;
 
     protected $fillable = [
@@ -38,9 +39,16 @@ class TravelOrder extends Model
         ];
     }
 
-    /**
-     * Relacao com usuario solicitante.
-     */
+    public function getDepartureDateBrAttribute(): ?string
+    {
+        return $this->formatDateBr($this->departure_date);
+    }
+
+    public function getReturnDateBrAttribute(): ?string
+    {
+        return $this->formatDateBr($this->return_date);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -18,6 +18,7 @@ use OpenApi\Attributes as OA;
     description: 'Use: Bearer {token}'
 )]
 #[OA\Tag(name: 'Auth', description: 'Autenticacao')]
+#[OA\Tag(name: 'Users', description: 'Usuarios')]
 #[OA\Tag(name: 'TravelOrders', description: 'Pedidos de viagem')]
 #[OA\Schema(
     schema: 'AuthenticatedUser',
@@ -38,6 +39,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'destination', type: 'string', example: 'Lisbon'),
         new OA\Property(property: 'departure_date', type: 'string', format: 'date', example: '2026-03-15'),
         new OA\Property(property: 'return_date', type: 'string', format: 'date', example: '2026-03-22'),
+        new OA\Property(property: 'departure_date_br', type: 'string', example: '15/03/2026', description: 'Data em formato BR dd/mm/yyyy'),
+        new OA\Property(property: 'return_date_br', type: 'string', example: '22/03/2026', description: 'Data em formato BR dd/mm/yyyy'),
         new OA\Property(property: 'status', type: 'string', example: 'requested'),
         new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
@@ -98,6 +101,18 @@ class OpenApiSpec
     public function me(): void {}
 
     #[OA\Get(
+        path: '/api/users',
+        tags: ['Users'],
+        summary: 'Listar usuarios (admin)',
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista de usuarios'),
+            new OA\Response(response: 403, description: 'Sem permissao'),
+        ]
+    )]
+    public function listUsers(): void {}
+
+    #[OA\Get(
         path: '/api/travel-orders',
         tags: ['TravelOrders'],
         summary: 'Listar pedidos de viagem',
@@ -105,8 +120,7 @@ class OpenApiSpec
         parameters: [
             new OA\Parameter(name: 'status', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'destination', in: 'query', schema: new OA\Schema(type: 'string')),
-            new OA\Parameter(name: 'created_from', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
-            new OA\Parameter(name: 'created_to', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
+            new OA\Parameter(name: 'user_id', in: 'query', schema: new OA\Schema(type: 'integer'), description: 'Admin only'),
             new OA\Parameter(name: 'departure_from', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'departure_to', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer')),

@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-blue: #0ea5e9;
+  --brand-blue-dark: #0284c7;
+}
+
+body {
+  @apply bg-slate-100 text-slate-900 min-h-screen;
+}
+
+#app {
+  @apply min-h-screen;
+}
+
+.brand-bg {
+  background-color: var(--brand-blue);
+}
+
+.brand-bg-dark {
+  background-color: var(--brand-blue-dark);
+}
+
+.brand-text {
+  color: var(--brand-blue);
+}

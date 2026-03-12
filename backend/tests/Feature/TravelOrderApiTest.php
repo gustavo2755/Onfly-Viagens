@@ -34,6 +34,8 @@ class TravelOrderApiTest extends TestCase
                     'destination',
                     'departure_date',
                     'return_date',
+                    'departure_date_br',
+                    'return_date_br',
                     'status',
                 ],
             ]);
@@ -89,12 +91,16 @@ class TravelOrderApiTest extends TestCase
                     'destination',
                     'departure_date',
                     'return_date',
+                    'departure_date_br',
+                    'return_date_br',
                     'status',
                     'created_at',
                     'updated_at',
                     'user' => ['id', 'name', 'email', 'role'],
                 ],
             ]);
+        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}$/', $response->json('data.departure_date_br'));
+        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}$/', $response->json('data.return_date_br'));
     }
 
     public function test_show_nonexistent_order_returns_404(): void
@@ -194,32 +200,96 @@ class TravelOrderApiTest extends TestCase
         $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['status']]);
     }
 
-    public function test_filters_by_status_and_destination(): void
+    public function test_filter_by_status(): void
     {
         $admin = User::factory()->admin()->create();
-        TravelOrder::factory()->create([
-            'destination' => 'Sao Paulo',
-            'status' => TravelOrderStatusEnum::Requested->value,
-        ]);
-        TravelOrder::factory()->create([
-            'destination' => 'Rio de Janeiro',
-            'status' => TravelOrderStatusEnum::Approved->value,
-        ]);
+        TravelOrder::factory()->create(['status' => TravelOrderStatusEnum::Requested->value]);
+        TravelOrder::factory()->create(['status' => TravelOrderStatusEnum::Approved->value]);
+        TravelOrder::factory()->create(['status' => TravelOrderStatusEnum::Approved->value]);
 
-        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?status=requested&destination=Sao');
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?status=approved');
 
         $response->assertOk()
             ->assertJsonStructure(['message', 'data', 'meta', 'links'])
-            ->assertJsonCount(1, 'data');
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filter_by_destination(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['destination' => 'Sao Paulo']);
+        TravelOrder::factory()->create(['destination' => 'Rio de Janeiro']);
+        TravelOrder::factory()->create(['destination' => 'Salvador']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?destination=Sao');
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.destination', 'Sao Paulo');
+    }
+
+    public function test_filter_by_user_id_admin_only(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        TravelOrder::factory()->count(2)->for($userA)->create();
+        TravelOrder::factory()->count(1)->for($userB)->create();
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?user_id='.$userA->id);
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filter_by_departure_from(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(1)]);
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(5)]);
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(10)]);
+
+        $from = now()->addDays(3)->toDateString();
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?departure_from='.$from);
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filter_by_departure_to(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(1)]);
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(5)]);
+        TravelOrder::factory()->create(['departure_date' => now()->addDays(10)]);
+
+        $to = now()->addDays(7)->toDateString();
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?departure_to='.$to);
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filter_by_invalid_user_id_returns_422(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?user_id=99999');
+
+        $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['user_id']]);
     }
 
     public function test_index_rejects_invalid_filter_ranges_by_form_request(): void
     {
         $admin = User::factory()->admin()->create();
 
-        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?created_from=2026-03-10&created_to=2026-03-01');
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?departure_from=2026-03-10&departure_to=2026-03-01');
 
-        $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['created_to']]);
+        $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['departure_to']]);
     }
 
     public function test_regular_user_lists_only_own_orders(): void

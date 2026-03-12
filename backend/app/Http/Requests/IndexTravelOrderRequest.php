@@ -27,8 +27,7 @@ class IndexTravelOrderRequest extends FormRequest
         return [
             'status' => ['nullable', Rule::enum(TravelOrderStatusEnum::class)],
             'destination' => ['nullable', 'string', 'min:2', 'max:120'],
-            'created_from' => ['nullable', 'date'],
-            'created_to' => ['nullable', 'date', 'after_or_equal:created_from'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'departure_from' => ['nullable', 'date'],
             'departure_to' => ['nullable', 'date', 'after_or_equal:departure_from'],
             'page' => ['nullable', 'integer', 'min:1'],

@@ -51,19 +51,6 @@ services:
     networks:
       - travel_orders_network
 
-  frontend:
-    build:
-      context: .
-      dockerfile: docker/frontend/Dockerfile
-    container_name: travel_orders_frontend
-    working_dir: /var/www/frontend
-    volumes:
-      - ./frontend:/var/www/frontend
-    ports:
-      - "5173:5173"
-    networks:
-      - travel_orders_network
-
 volumes:
   mysql_data:
 

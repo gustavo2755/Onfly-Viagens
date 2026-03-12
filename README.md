@@ -7,12 +7,12 @@ Aplicacao Full Stack para gerenciamento de pedidos de viagem corporativa, organi
 - Back-end: Laravel 12, Sanctum, Notifications, Redis, PHPUnit (SQLite em testes)
 - Controle de acesso: Spatie Laravel Permission (roles)
 - Front-end: Vue 3, Vite, Pinia (etapa 2)
-- Infra: Docker Compose com PHP 8.3, Nginx, MySQL, Redis e Node
+- Infra: Docker Compose (backend: PHP 8.3, Nginx, MySQL, Redis). Frontend roda localmente com Node.
 
 ## Arquitetura
 
 - `backend/`: API REST API-first em Laravel
-- `frontend/`: SPA Vue (estrutura pronta, implementacao na etapa 2)
+- `frontend/`: SPA Vue 3 consumindo a API Laravel
 - `docker/`: definicoes de containers
 - `docker-compose.yml`: orquestracao unica do ecossistema
 
@@ -44,7 +44,7 @@ travel-orders/
    - `cd travel-orders`
 2. Copie o env do backend:
    - `cp backend/.env.example backend/.env`
-3. Suba os containers:
+3. Suba os containers (backend):
    - `docker compose up -d --build`
 4. Instale dependencias PHP dentro do container app (se necessario):
    - `docker compose exec app composer install`
@@ -64,9 +64,16 @@ Back-end ficara disponivel em `http://localhost:8080`.
 6. `php artisan migrate --seed`
 7. `php artisan serve`
 
-## Como rodar frontend isolado
+## Como rodar o frontend (local)
 
-Etapa 2 ainda nao implementada. A pasta `frontend/` foi reservada para a segunda etapa.
+O frontend roda na maquina local, nao em Docker. O proxy do Vite encaminha `/api` para `http://localhost:8080`.
+
+1. Suba o backend com Docker: `docker compose up -d`
+2. `cd frontend`
+3. `npm install`
+4. `npm run dev`
+
+Frontend em `http://localhost:5173`. Requisicoes a `/api` sao proxeadas para o backend em `http://localhost:8080`.
 
 ## Variaveis de ambiente (backend)
 
@@ -115,9 +122,13 @@ A especificacao esta em `backend/app/OpenApi/OpenApiSpec.php`.
 - Admin:
   - `email: admin@travelorders.test`
   - `password: password`
+  - `role: admin`
 - Usuario comum:
   - `email: user@travelorders.test`
   - `password: password`
+  - `role: user`
+
+Para testar login via API, use `POST /api/auth/login` com as credenciais acima.
 
 ## Endpoints da API (etapa 1)
 
@@ -126,6 +137,7 @@ Autenticacao:
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
+- `GET /api/users` (admin)
 
 Pedidos:
 
@@ -136,7 +148,25 @@ Pedidos:
 - `GET /api/travel-orders/dashboard`
 - `GET /api/travel-orders/status-logs` (admin)
 
+Filtros de listagem: `status`, `destination`, `user_id` (admin), `departure_from`, `departure_to`
+
+Estrutura TravelOrder: `id`, `user_id`, `requester_name`, `destination`, `departure_date`, `return_date`, `departure_date_br`, `return_date_br` (dd/mm/yyyy), `status`, `created_at`, `updated_at`
+
 ## Fluxo por etapas
 
 1. Etapa 1: Back-end completo (concluida nesta entrega).
-2. Etapa 2: Front-end Vue completo (nao iniciada nesta entrega).
+2. Etapa 2: Front-end Vue completo (concluida nesta entrega).
+
+## Frontend (Etapa 2)
+
+- Vue 3 + Vite + Pinia + Vue Router
+- Axios com interceptor Bearer token
+- Tailwind CSS para UI responsiva
+- Vue Toastification para feedback de sucesso/erro
+- Rotas protegidas por autenticacao e role admin
+- Paginas implementadas:
+  - `LoginPage`
+  - `TravelOrdersPage`
+  - `CreateTravelOrderPage`
+  - `TravelOrderDetailPage`
+  - `DashboardPage` (admin)

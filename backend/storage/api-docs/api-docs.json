@@ -90,6 +90,28 @@
                 ]
             }
         },
+        "/api/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Listar usuarios (admin)",
+                "operationId": "b44a5b03c54e57e8a201cdef808e840d",
+                "responses": {
+                    "200": {
+                        "description": "Lista de usuarios"
+                    },
+                    "403": {
+                        "description": "Sem permissao"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/travel-orders": {
             "get": {
                 "tags": [
@@ -113,19 +135,11 @@
                         }
                     },
                     {
-                        "name": "created_from",
+                        "name": "user_id",
                         "in": "query",
+                        "description": "Admin only",
                         "schema": {
-                            "type": "string",
-                            "format": "date"
-                        }
-                    },
-                    {
-                        "name": "created_to",
-                        "in": "query",
-                        "schema": {
-                            "type": "string",
-                            "format": "date"
+                            "type": "integer"
                         }
                     },
                     {
@@ -419,6 +433,16 @@
                         "format": "date",
                         "example": "2026-03-22"
                     },
+                    "departure_date_br": {
+                        "description": "Data em formato BR dd/mm/yyyy",
+                        "type": "string",
+                        "example": "15/03/2026"
+                    },
+                    "return_date_br": {
+                        "description": "Data em formato BR dd/mm/yyyy",
+                        "type": "string",
+                        "example": "22/03/2026"
+                    },
                     "status": {
                         "type": "string",
                         "example": "requested"
@@ -477,6 +501,10 @@
         {
             "name": "Auth",
             "description": "Autenticacao"
+        },
+        {
+            "name": "Users",
+            "description": "Usuarios"
         },
         {
             "name": "TravelOrders",

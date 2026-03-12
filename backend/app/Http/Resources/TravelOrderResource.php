@@ -11,9 +11,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class TravelOrderResource extends JsonResource
 {
-    /**
-     * Converte entidade de pedido para payload padrao da API.
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -23,9 +20,11 @@ class TravelOrderResource extends JsonResource
             'destination' => $this->destination,
             'departure_date' => optional($this->departure_date)->toDateString(),
             'return_date' => optional($this->return_date)->toDateString(),
-            'status' => $this->status instanceof TravelOrderStatusEnum ? $this->status->value : $this->status,
+            'departure_date_br' => $this->departure_date_br,
+            'return_date_br' => $this->return_date_br,
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),
+            'status' => $this->status instanceof TravelOrderStatusEnum ? $this->status->value : $this->status,
             'user' => $this->whenLoaded('user', fn () => new AuthenticatedUserResource($this->user)),
         ];
     }
