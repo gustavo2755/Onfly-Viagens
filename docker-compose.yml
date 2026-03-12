@@ -1,0 +1,72 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: travel_orders_app
+    working_dir: /var/www/backend
+    volumes:
+      - ./backend:/var/www/backend
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - travel_orders_network
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: travel_orders_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/backend
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+    networks:
+      - travel_orders_network
+
+  mysql:
+    image: mysql:8.4
+    container_name: travel_orders_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: travel_orders
+      MYSQL_USER: travel_orders
+      MYSQL_PASSWORD: travel_orders
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf
+    networks:
+      - travel_orders_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: travel_orders_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - travel_orders_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: travel_orders_frontend
+    working_dir: /var/www/frontend
+    volumes:
+      - ./frontend:/var/www/frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - travel_orders_network
+
+volumes:
+  mysql_data:
+
+networks:
+  travel_orders_network:
+    driver: bridge

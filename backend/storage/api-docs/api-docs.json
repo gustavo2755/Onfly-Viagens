@@ -1,0 +1,491 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Travel Orders API",
+        "description": "API para gerenciamento de pedidos de viagem corporativa.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Servidor da API"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Autenticar usuario",
+                "operationId": "7e7fa6614d3c69beaa9475bc04e63253",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login realizado"
+                    },
+                    "401": {
+                        "description": "Credenciais invalidas"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout do usuario autenticado",
+                "operationId": "8bb835ddf19c786ab4aef0678effe37b",
+                "responses": {
+                    "200": {
+                        "description": "Logout realizado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Dados do usuario autenticado",
+                "operationId": "dcbae01556931bfc8eb43439921555ea",
+                "responses": {
+                    "200": {
+                        "description": "Usuario autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/travel-orders": {
+            "get": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Listar pedidos de viagem",
+                "operationId": "d97c43ab0086a8b502a4b87cc280cf50",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "created_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "created_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "departure_from",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "departure_to",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Criar pedido de viagem",
+                "operationId": "19551e87bbc783a27efbf3de6729f61a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "requester_name",
+                                    "destination",
+                                    "departure_date",
+                                    "return_date"
+                                ],
+                                "properties": {
+                                    "requester_name": {
+                                        "type": "string"
+                                    },
+                                    "destination": {
+                                        "type": "string"
+                                    },
+                                    "departure_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "return_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pedido criado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/travel-orders/{id}": {
+            "get": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Detalhar pedido",
+                "operationId": "1e13223c4c94b3b57b5a6dcb14442bd6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalhe do pedido"
+                    },
+                    "404": {
+                        "description": "Nao encontrado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/travel-orders/{travelOrder}/status": {
+            "patch": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Atualizar status do pedido (admin)",
+                "operationId": "03d2550966634c944f993ab47f1b1bee",
+                "parameters": [
+                    {
+                        "name": "travelOrder",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status"
+                                ],
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approved",
+                                            "cancelled"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status atualizado"
+                    },
+                    "403": {
+                        "description": "Sem permissao"
+                    },
+                    "422": {
+                        "description": "Regra de negocio violada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/travel-orders/dashboard": {
+            "get": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Resumo do dashboard",
+                "operationId": "8f57f5672b78825f980e8714f0f002a2",
+                "responses": {
+                    "200": {
+                        "description": "Resumo de pedidos"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/travel-orders/status-logs": {
+            "get": {
+                "tags": [
+                    "TravelOrders"
+                ],
+                "summary": "Listar logs de mudanca de status (admin)",
+                "operationId": "9c3400aeab00c9b5ad3db9e2007f3169",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de logs"
+                    },
+                    "403": {
+                        "description": "Sem permissao"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AuthenticatedUser": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Admin User"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "admin@travelorders.test"
+                    },
+                    "role": {
+                        "type": "string",
+                        "example": "admin"
+                    }
+                },
+                "type": "object"
+            },
+            "TravelOrder": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "requester_name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "destination": {
+                        "type": "string",
+                        "example": "Lisbon"
+                    },
+                    "departure_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-03-15"
+                    },
+                    "return_date": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-03-22"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "requested"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TravelOrderStatusLog": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "travel_order_id": {
+                        "type": "integer",
+                        "example": 10
+                    },
+                    "admin_user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "from_status": {
+                        "type": "string",
+                        "example": "requested"
+                    },
+                    "to_status": {
+                        "type": "string",
+                        "example": "approved"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "sanctum": {
+                "type": "apiKey",
+                "description": "Use Bearer token in Authorization header",
+                "name": "Authorization",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Autenticacao"
+        },
+        {
+            "name": "TravelOrders",
+            "description": "Pedidos de viagem"
+        }
+    ],
+    "security": [
+        {
+            "sanctum": []
+        }
+    ]
+}
