@@ -17,40 +17,20 @@ class SwaggerAccessTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_user_with_token_cannot_access_swagger_ui(): void
+    public function test_non_admin_cannot_access_swagger_ui(): void
     {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
 
-        $response = $this->get('/api/documentation?token='.$token);
+        $response = $this->actingAs($user, 'web')->get('/api/documentation');
 
         $response->assertStatus(403);
     }
 
-    public function test_user_with_bearer_header_cannot_access_swagger_ui(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user, 'sanctum')->get('/api/documentation');
-
-        $response->assertStatus(403);
-    }
-
-    public function test_admin_can_access_swagger_ui_with_token_in_query(): void
-    {
-        $admin = User::factory()->admin()->create();
-        $token = $admin->createToken('test')->plainTextToken;
-
-        $response = $this->get('/api/documentation?token='.$token);
-
-        $response->assertStatus(200);
-    }
-
-    public function test_admin_can_access_swagger_ui_with_bearer_header(): void
+    public function test_admin_can_access_swagger_ui_via_session(): void
     {
         $admin = User::factory()->admin()->create();
 
-        $response = $this->actingAs($admin, 'sanctum')->get('/api/documentation');
+        $response = $this->actingAs($admin, 'web')->get('/api/documentation');
 
         $response->assertStatus(200);
     }
@@ -62,22 +42,20 @@ class SwaggerAccessTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_user_cannot_access_docs(): void
+    public function test_non_admin_cannot_access_docs(): void
     {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
 
-        $response = $this->get('/docs?token='.$token);
+        $response = $this->actingAs($user, 'web')->get('/docs');
 
         $response->assertStatus(403);
     }
 
-    public function test_admin_can_access_docs(): void
+    public function test_admin_can_access_docs_via_session(): void
     {
         $admin = User::factory()->admin()->create();
-        $token = $admin->createToken('test')->plainTextToken;
 
-        $response = $this->get('/docs?token='.$token);
+        $response = $this->actingAs($admin, 'web')->get('/docs');
 
         $response->assertStatus(200);
     }
@@ -89,23 +67,28 @@ class SwaggerAccessTest extends TestCase
         $response->assertStatus(401);
     }
 
-    public function test_user_cannot_access_asset(): void
+    public function test_non_admin_cannot_access_asset(): void
     {
         $user = User::factory()->create();
-        $token = $user->createToken('test')->plainTextToken;
 
-        $response = $this->get('/docs/asset/swagger-ui.css?token='.$token);
+        $response = $this->actingAs($user, 'web')->get('/docs/asset/swagger-ui.css');
 
         $response->assertStatus(403);
     }
 
-    public function test_admin_can_access_asset(): void
+    public function test_admin_can_access_asset_via_session(): void
     {
         $admin = User::factory()->admin()->create();
-        $token = $admin->createToken('test')->plainTextToken;
 
-        $response = $this->get('/docs/asset/swagger-ui.css?token='.$token);
+        $response = $this->actingAs($admin, 'web')->get('/docs/asset/swagger-ui.css');
 
         $response->assertStatus(200);
+    }
+
+    public function test_unauthenticated_browser_redirects_to_frontend_login(): void
+    {
+        $response = $this->get('/api/documentation');
+
+        $response->assertRedirect(config('app.frontend_url', 'http://localhost:5173') . '/login');
     }
 }

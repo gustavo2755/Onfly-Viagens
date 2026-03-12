@@ -9,14 +9,11 @@ return [
             ],
 
             'routes' => [
-                /*
-                 * Route for accessing api documentation interface
-                 */
                 'api' => 'api/documentation',
                 'middleware' => [
-                    'api' => ['add.token.from.query', 'auth:sanctum', 'admin'],
-                    'asset' => ['add.token.from.query', 'auth:sanctum', 'admin'],
-                    'docs' => ['add.token.from.query', 'auth:sanctum', 'admin'],
+                    'api' => ['auth:web', 'admin'],
+                    'asset' => ['auth:web', 'admin'],
+                    'docs' => ['auth:web', 'admin'],
                 ],
             ],
             'paths' => [
@@ -79,7 +76,9 @@ return [
             /*
              * Route Group options
              */
-            'group_options' => [],
+            'group_options' => [
+                'middleware' => ['web'],
+            ],
         ],
 
         'paths' => [

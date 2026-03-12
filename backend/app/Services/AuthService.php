@@ -35,6 +35,10 @@ class AuthService implements AuthServiceInterface
      */
     public function logout(User $user): void
     {
-        $user->currentAccessToken()?->delete();
+        $token = $user->currentAccessToken();
+        if ($token && method_exists($token, 'delete')) {
+            $token->delete();
+        }
+        Auth::guard('web')->logout();
     }
 }

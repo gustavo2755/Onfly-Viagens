@@ -1,5 +1,5 @@
 <script setup>
-import { ChartBarIcon, DocumentTextIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { ChartBarIcon, CodeBracketIcon, DocumentTextIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '../stores/authStore'
@@ -7,6 +7,8 @@ import { useAuthStore } from '../stores/authStore'
 const authStore = useAuthStore()
 const router = useRouter()
 const toast = useToast()
+
+const apiDocsUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080') + '/api/documentation'
 
 async function handleLogout() {
   await authStore.signOut()
@@ -56,6 +58,15 @@ async function handleLogout() {
           <ChartBarIcon class="size-4" />
           Dashboard
         </RouterLink>
+        <a
+          v-if="authStore.isAdmin"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :href="apiDocsUrl"
+          target="_blank"
+        >
+          <CodeBracketIcon class="size-4" />
+          API Docs
+        </a>
       </div>
     </nav>
 

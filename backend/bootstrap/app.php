@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: ['api/*']);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureAdmin::class,
             'add.token.from.query' => \App\Http\Middleware\AddTokenFromQuery::class,
@@ -27,7 +29,11 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (AuthenticationException $exception, Request $request) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+
+            return redirect()->guest(config('app.frontend_url', 'http://localhost:5173') . '/login');
         });
 
         $exceptions->render(function (HttpExceptionInterface $exception, Request $request) {
