@@ -2,6 +2,7 @@
 import { BellIcon } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItems } from '@headlessui/vue'
 import { onMounted, watch } from 'vue'
+import { usePolling } from '../composables/usePolling'
 import { useRouter } from 'vue-router'
 import StatusBadge from './StatusBadge.vue'
 import { useNotificationStore } from '../stores/notificationStore'
@@ -33,6 +34,7 @@ function goToAll() {
 
 onMounted(() => {
   notificationStore.fetchUnreadCount()
+  usePolling(() => notificationStore.fetchUnreadCount(), 15000, { whenVisible: true })
 })
 
 watch(

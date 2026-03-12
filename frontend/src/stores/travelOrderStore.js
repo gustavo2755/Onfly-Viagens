@@ -19,8 +19,9 @@ export const useTravelOrderStore = defineStore('travelOrders', {
     loading: false,
   }),
   actions: {
-    async fetchList(params = {}) {
-      this.loading = true
+    async fetchList(params = {}, options = {}) {
+      const silent = options.silent === true
+      if (!silent) this.loading = true
       try {
         const data = await listTravelOrders(params)
         this.items = data.data
@@ -28,7 +29,7 @@ export const useTravelOrderStore = defineStore('travelOrders', {
         this.links = data.links || null
         return data
       } finally {
-        this.loading = false
+        if (!silent) this.loading = false
       }
     },
     async fetchOne(id) {

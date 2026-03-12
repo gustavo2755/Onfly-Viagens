@@ -1,6 +1,7 @@
 <script setup>
 import { DocumentTextIcon } from '@heroicons/vue/24/outline'
 import { onMounted, reactive, ref } from 'vue'
+import { usePolling } from '../composables/usePolling'
 import { getErrorMessage } from '../utils/errorMessage'
 import { useToast } from 'vue-toastification'
 import AppLayout from '../layouts/AppLayout.vue'
@@ -38,11 +39,11 @@ const confirmDescription = ref('')
 const selectedOrder = ref(null)
 const nextStatus = ref('')
 
-async function loadData() {
+async function loadData(opts = {}) {
   try {
-    await travelOrderStore.fetchList(filters)
+    await travelOrderStore.fetchList(filters, opts)
   } catch (error) {
-    toast.error(getErrorMessage(error))
+    if (!opts.silent) toast.error(getErrorMessage(error))
   }
 }
 
@@ -90,6 +91,7 @@ async function changePage(page) {
 
 onMounted(() => {
   loadData()
+  usePolling(() => loadData({ silent: true }), 15000, { whenVisible: true })
 })
 </script>
 
