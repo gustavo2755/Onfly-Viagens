@@ -1,27 +1,56 @@
 # Travel Orders
 
-Aplicação full stack para gerenciamento de pedidos de viagem corporativa. Usuários criam pedidos de viagem; administradores aprovam ou cancelam. API REST consumida por SPA Vue 3.
+Aplicação full stack para gerenciamento de pedidos de viagem corporativa. Usuários criam pedidos; administradores aprovam ou cancelam. API REST consumida por SPA Vue 3 com autenticação via Laravel Sanctum.
 
 ## Stack
 
-**Backend**
-- Laravel 12, PHP 8.3
-- Laravel Sanctum (autenticação por token)
-- Spatie Laravel Permission (roles: `admin`, `user`)
-- Redis (cache)
-- MySQL 8.4
-- PHPUnit (testes com SQLite em memória)
-- L5-Swagger (documentação OpenAPI)
+| Camada | Tecnologias |
+|--------|-------------|
+| **Backend** | Laravel 12, PHP 8.3, Sanctum, Spatie Permission, Redis, MySQL 8.4, L5-Swagger |
+| **Frontend** | Vue 3, Vite, Pinia, Vue Router, Tailwind CSS, Headless UI, Heroicons, Vue Toastification |
+| **Infra** | Docker Compose (PHP-FPM, Nginx, MySQL, Redis) |
 
-**Frontend**
-- Vue 3, Vite, Pinia, Vue Router
-- Axios (interceptor Bearer)
-- Tailwind CSS, Headless UI, Heroicons
-- Vue Toastification
+## Interface
 
-**Infra**
-- Docker Compose: PHP-FPM, Nginx, MySQL, Redis
-- Frontend roda localmente com Node (Vite proxy para API)
+### Listagem de pedidos
+
+Página principal com filtros colapsáveis (status, usuário, solicitante, destino, datas de partida e criação), tabela paginada e ações de aprovar/cancelar para admin. Polling silencioso a cada 15s para atualização em background.
+
+![Listagem de pedidos](docs/images/travel-orders-list-1-example.png)
+
+![Listagem com filtros](docs/images/travel-orders-list-2-example.png)
+
+### Novo pedido
+
+Formulário com validação em português: nome do solicitante, destino, data de saída e retorno. Data de saída ≥ hoje; data de retorno ≥ data de saída.
+
+![Novo pedido](docs/images/travel-orders-create-example.png)
+
+### Dashboard (admin)
+
+Cards com totais por status e tabela das últimas alterações de status com filtros.
+
+![Dashboard](docs/images/dashboard-example.png)
+
+### Notificações
+
+Sino no header exibe contagem de não lidas; dropdown com preview e link para página completa. Polling de 15s para atualização do contador.
+
+![Alerta de notificação](docs/images/notification-alert-example.png)
+
+![Página de notificações](docs/images/notifications-page-example.png)
+
+### Mobile
+
+Menu hamburger em telas menores; filtros colapsáveis (abertos no desktop, fechados no mobile).
+
+![Layout mobile](docs/images/mobile-example.png)
+
+### Documentação da API (Swagger)
+
+Disponível para admins em `/api/documentation`. Autenticação via Bearer token.
+
+![Swagger](docs/images/swagger-example.png)
 
 ## Estrutura do projeto
 
@@ -29,137 +58,47 @@ Aplicação full stack para gerenciamento de pedidos de viagem corporativa. Usu�
 travel-orders/
 ├── backend/          # API Laravel
 ├── frontend/         # SPA Vue 3
-├── docker/           # Dockerfiles e configs (nginx, php, mysql)
+├── docker/           # Dockerfiles e configs
 ├── docs/images/      # Screenshots da interface
 ├── docker-compose.yml
 └── README.md
 ```
 
-## Interface do sistema
-
-### Login
-
-Tela de autenticação com campos de e-mail e senha. Layout dividido: imagem de fundo à esquerda e formulário à direita com logo onfly.
-
-![Login](docs/images/login-example.png)
-
-### Listagem de pedidos
-
-Página principal de pedidos com filtros (status, usuário, solicitante, destino, datas), tabela com colunas ID, Solicitante, Destino, Saída, Retorno, Status e Ações. Admin vê botões Aprovar/Cancelar em pedidos solicitados; paginação na parte inferior.
-
-![Listagem de pedidos](docs/images/travel-orders-list-example.png)
-
-### Novo pedido
-
-Formulário para criar pedido: nome do solicitante, destino, data de saída e data de retorno. Validação em português; data de saída não pode ser anterior a hoje; data de retorno deve ser igual ou posterior à de saída.
-
-![Novo pedido](docs/images/travel-orders-create-example.png)
-
-### Dashboard (admin)
-
-Visão geral com cards de totais (Total, Solicitado, Aprovado, Cancelado) e tabela das últimas alterações de status com colunas Pedido, Admin, De, Para, Quando e Ações (botão Detalhes).
-
-![Dashboard](docs/images/dashboard-example.png)
-
-## Como rodar o sistema
+## Como rodar
 
 ### Com Docker (recomendado)
 
-1. Na raiz do projeto:
-   ```bash
-   cd travel-orders
-   cp backend/.env.example backend/.env
-   docker compose up -d --build
-   ```
+```bash
+cd travel-orders
+cp backend/.env.example backend/.env
+docker compose up -d --build
 
-2. Instalar dependências e configurar o backend:
-   ```bash
-   docker compose exec app composer install
-   docker compose exec app php artisan key:generate
-   docker compose exec app php artisan migrate --seed
-   ```
+docker compose exec app composer install
+docker compose exec app php artisan key:generate
+docker compose exec app php artisan migrate --seed
 
-3. Rodar o frontend (na máquina local):
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+cd frontend && npm install && npm run dev
+```
 
 - **Backend:** http://localhost:8080  
 - **Frontend:** http://localhost:5173  
-- O Vite faz proxy de `/api` para `http://localhost:8080`
+- **Swagger:** http://localhost:8080/api/documentation (admin)
 
-### Backend sem Docker
+### Sem Docker
 
 ```bash
 cd backend
 cp .env.example .env
 composer install
 php artisan key:generate
-# Ajuste DB_* no .env para seu MySQL
+# Ajuste DB_* no .env
 php artisan migrate --seed
 php artisan serve
-```
 
-### Frontend
-
-O frontend sempre roda localmente. O `.env` do frontend pode ter `VITE_API_BASE_URL` se a API estiver em outra URL. Por padrão o proxy do Vite usa `http://localhost:8080`.
-
-```bash
 cd frontend
 npm install
 npm run dev
 ```
-
-Build para produção: `npm run build`
-
-## Variáveis de ambiente (backend)
-
-Em `backend/.env`:
-
-| Variável | Descrição |
-|----------|------------|
-| `APP_URL` | URL do backend (ex: `http://localhost:8080`) |
-| `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Conexão MySQL |
-| `CACHE_STORE` | `redis` em produção, `array` em testes |
-| `REDIS_HOST`, `REDIS_PORT` | Redis |
-| `L5_SWAGGER_CONST_HOST` | URL para Swagger UI |
-
-## Testes
-
-Os testes usam SQLite em memória (`:memory:`), configurado em `phpunit.xml`.
-
-**Localmente:**
-```bash
-cd backend
-php artisan test
-```
-
-**No Docker:**
-```bash
-docker compose exec app php artisan test
-```
-
-**Teste específico:**
-```bash
-php artisan test --filter=TravelOrderApiTest
-```
-
-## Migrations e seeders
-
-```bash
-php artisan migrate
-php artisan db:seed
-php artisan migrate:fresh --seed   # reset completo
-```
-
-## Swagger (documentação da API)
-
-- Gerar OpenAPI: `php artisan l5-swagger:generate`
-- UI: http://localhost:8080/api/documentation (requer login como admin)
-- Autenticação: Bearer token no header ou `?token=SEU_TOKEN` na URL
-- Especificação: `backend/app/OpenApi/OpenApiSpec.php`
 
 ## Credenciais (seed)
 
@@ -171,19 +110,20 @@ php artisan migrate:fresh --seed   # reset completo
 ## Funcionalidades
 
 ### Autenticação
-- Login via `POST /api/auth/login` (retorna token)
-- Logout e `GET /api/auth/me` com Bearer token
+- Login via Sanctum (Bearer token)
+- Rotas protegidas; admin com acesso a dashboard e logs
 
 ### Pedidos de viagem
-- **Criar:** nome do solicitante, destino, data de saída, data de retorno
-- **Validações:** data de saída ≥ hoje; data de retorno ≥ data de saída; nome 3–120 chars; destino 2–120 chars
-- **Status:** `requested` → `approved` ou `cancelled` (apenas admin; aprovado não pode ser cancelado)
+- Criar, listar, consultar por ID
+- Filtros: status, destino, solicitante, usuário (admin), datas de partida e criação
+- Status: `requested` → `approved` ou `cancelled` (apenas admin; aprovado não pode ser cancelado)
+- Notificação ao solicitante em aprovação/cancelamento
 
-### Permissões
-- **User:** vê e cria apenas seus pedidos
-- **Admin:** vê todos, aprova/cancela, dashboard, logs de status, lista usuários
+### Polling (MVP)
+- Notificações: contagem de não lidas a cada 15s (só com aba visível)
+- Lista de pedidos: refresh silencioso a cada 15s na página de pedidos
 
-### API – principais endpoints
+## API – principais endpoints
 
 | Método | Endpoint | Descrição |
 |--------|----------|-----------|
@@ -196,16 +136,36 @@ php artisan migrate:fresh --seed   # reset completo
 | GET | `/api/travel-orders/{id}` | Detalhes do pedido |
 | PATCH | `/api/travel-orders/{id}/status` | Atualizar status (admin) |
 | GET | `/api/travel-orders/dashboard` | Contadores (admin) |
-| GET | `/api/travel-orders/status-logs` | Logs de mudança de status (admin) |
+| GET | `/api/travel-orders/status-logs` | Logs de mudança (admin) |
+| GET | `/api/notifications` | Lista notificações |
+| GET | `/api/notifications/unread-count` | Contagem não lidas |
 
-**Filtros na listagem:** `status`, `destination`, `requester_name`, `user_id` (admin), `departure_from`, `departure_to`, `page`, `per_page`
+**Filtros na listagem de pedidos:** `status`, `destination`, `requester_name`, `user_id` (admin), `departure_from`, `departure_to`, `created_from`, `created_to`, `page`, `per_page`
 
-## Frontend – páginas e recursos
+## Testes
 
-- **Login** – autenticação com token
-- **Pedidos** – listagem com filtros, paginação, busca
-- **Novo pedido** – formulário com validação em português
-- **Detalhes do pedido** – visualização e ações (admin)
-- **Dashboard** – totais por status (admin)
-- Rotas protegidas por autenticação e role admin
-- Mensagens de validação em português; erros genéricos padronizados
+```bash
+cd backend
+php artisan test
+# ou: docker compose exec app php artisan test
+```
+
+Testes usam SQLite em memória. Para teste específico: `php artisan test --filter=TravelOrderApiTest`
+
+## Dados de exemplo
+
+O seeder cria 15 pedidos com solicitantes e destinos realistas (ex.: João Silva, Maria Santos, São Paulo, Lisboa). Para atualizar pedidos existentes via Tinker:
+
+```bash
+php artisan tinker --execute="require base_path('database/scripts/update_travel_orders_realistic.php');"
+```
+
+## Variáveis de ambiente (backend)
+
+| Variável | Descrição |
+|----------|-----------|
+| `APP_URL` | URL do backend |
+| `DB_*` | Conexão MySQL |
+| `CACHE_STORE` | `redis` em produção |
+| `REDIS_HOST`, `REDIS_PORT` | Redis |
+| `L5_SWAGGER_CONST_HOST` | URL para Swagger |

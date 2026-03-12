@@ -16,8 +16,9 @@ export const useNotificationStore = defineStore('notifications', {
       this.unreadItems = data.data
       return data
     },
-    async fetchList(params = {}) {
-      this.loading = true
+    async fetchList(params = {}, options = {}) {
+      const silent = options.silent === true
+      if (!silent) this.loading = true
       try {
         const data = await listNotifications(params)
         this.items = data.data
@@ -25,7 +26,7 @@ export const useNotificationStore = defineStore('notifications', {
         this.links = data.links || null
         return data
       } finally {
-        this.loading = false
+        if (!silent) this.loading = false
       }
     },
     async fetchUnreadCount() {

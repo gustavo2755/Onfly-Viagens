@@ -8,6 +8,7 @@ import {
   XCircleIcon,
 } from '@heroicons/vue/24/outline'
 import { onMounted, reactive, ref } from 'vue'
+import { usePolling } from '../composables/usePolling'
 import { getErrorMessage } from '../utils/errorMessage'
 import { useToast } from 'vue-toastification'
 import AppLayout from '../layouts/AppLayout.vue'
@@ -30,14 +31,14 @@ const logFilters = reactive({
   per_page: 10,
 })
 
-async function loadData() {
+async function loadData(opts = {}) {
   try {
     await Promise.all([
       travelOrderStore.fetchDashboard(),
       travelOrderStore.fetchStatusLogs(logFilters),
     ])
   } catch (error) {
-    toast.error(getErrorMessage(error))
+    if (!opts.silent) toast.error(getErrorMessage(error))
   }
 }
 
@@ -50,7 +51,10 @@ async function openDetail(travelOrderId) {
   }
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+  usePolling(() => loadData({ silent: true }), 15000, { whenVisible: true })
+})
 </script>
 
 <template>

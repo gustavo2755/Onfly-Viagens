@@ -14,12 +14,16 @@ class TravelOrderSeeder extends Seeder
         $admin = User::query()->where('email', 'admin@admin.com')->first();
         $user = User::query()->where('email', 'user@user.com')->first();
 
-        TravelOrder::factory()->count(4)->for($user)->create([
+        TravelOrder::factory()->count(6)->for($user)->create([
             'status' => TravelOrderStatusEnum::Requested->value,
         ]);
 
-        TravelOrder::factory()->count(2)->for($user)->create([
+        TravelOrder::factory()->count(5)->for($user)->create([
             'status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+
+        TravelOrder::factory()->count(2)->for($user)->create([
+            'status' => TravelOrderStatusEnum::Cancelled->value,
         ]);
 
         TravelOrder::factory()->count(2)->for($admin)->create();

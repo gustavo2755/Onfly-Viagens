@@ -6,6 +6,7 @@ import {
   EyeIcon,
 } from '@heroicons/vue/24/outline'
 import { onMounted, reactive, ref } from 'vue'
+import { usePolling } from '../composables/usePolling'
 import { getErrorMessage } from '../utils/errorMessage'
 import { useToast } from 'vue-toastification'
 import AppLayout from '../layouts/AppLayout.vue'
@@ -26,14 +27,14 @@ const filters = reactive({
   per_page: 10,
 })
 
-async function loadData() {
+async function loadData(opts = {}) {
   try {
-    await notificationStore.fetchList({
-      page: filters.page,
-      per_page: filters.per_page,
-    })
+    await notificationStore.fetchList(
+      { page: filters.page, per_page: filters.per_page },
+      opts
+    )
   } catch (error) {
-    toast.error(getErrorMessage(error))
+    if (!opts.silent) toast.error(getErrorMessage(error))
   }
 }
 
@@ -49,6 +50,7 @@ async function openDetail(travelOrderId) {
 async function markAsRead(notification) {
   try {
     await notificationStore.markAsRead(notification.id)
+    toast.success('Notificação marcada como lida')
   } catch (error) {
     toast.error(getErrorMessage(error))
   }
@@ -73,7 +75,10 @@ function closeDetailModal() {
   detailModalOpen.value = false
 }
 
-onMounted(loadData)
+onMounted(() => {
+  loadData()
+  usePolling(() => loadData({ silent: true }), 15000, { whenVisible: true })
+})
 </script>
 
 <template>

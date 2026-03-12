@@ -2,12 +2,15 @@
 import { BellIcon } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItems } from '@headlessui/vue'
 import { onMounted, watch } from 'vue'
-import { usePolling } from '../composables/usePolling'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+import { getErrorMessage } from '../utils/errorMessage'
+import { usePolling } from '../composables/usePolling'
 import StatusBadge from './StatusBadge.vue'
 import { useNotificationStore } from '../stores/notificationStore'
 
 const router = useRouter()
+const toast = useToast()
 const notificationStore = useNotificationStore()
 
 async function loadUnread() {
@@ -25,7 +28,12 @@ function formatDate(dateStr) {
 }
 
 async function handleMarkAsRead(notification) {
-  await notificationStore.markAsRead(notification.id)
+  try {
+    await notificationStore.markAsRead(notification.id)
+    toast.success('Notificação marcada como lida')
+  } catch (error) {
+    toast.error(getErrorMessage(error))
+  }
 }
 
 function goToAll() {
