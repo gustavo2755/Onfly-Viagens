@@ -25,7 +25,7 @@ class StoreTravelOrderRequest extends FormRequest
         return [
             'requester_name' => ['required', 'string', 'min:3', 'max:120'],
             'destination' => ['required', 'string', 'min:2', 'max:120'],
-            'departure_date' => ['required', 'date'],
+            'departure_date' => ['required', 'date', 'after_or_equal:today'],
             'return_date' => ['required', 'date', 'after_or_equal:departure_date'],
         ];
     }
@@ -41,6 +41,7 @@ class StoreTravelOrderRequest extends FormRequest
             'destination.max' => 'O destino deve ter no máximo 120 caracteres.',
             'departure_date.required' => 'A data de saída é obrigatória.',
             'departure_date.date' => 'A data de saída deve ser uma data válida.',
+            'departure_date.after_or_equal' => 'A data de saída deve ser igual ou posterior a hoje.',
             'return_date.required' => 'A data de retorno é obrigatória.',
             'return_date.date' => 'A data de retorno deve ser uma data válida.',
             'return_date.after_or_equal' => 'A data de retorno deve ser igual ou posterior à data de saída.',

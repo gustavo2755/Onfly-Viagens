@@ -8,6 +8,7 @@ const VALIDATION_TRANSLATIONS = {
   'The requester name field must be at least 3 characters.': 'O nome do solicitante deve ter pelo menos 3 caracteres.',
   'The destination field must be at least 2 characters.': 'O destino deve ter pelo menos 2 caracteres.',
   'The return date must be a date after or equal to departure date.': 'A data de retorno deve ser igual ou posterior à data de saída.',
+  'The departure date field must be a date after or equal to today.': 'A data de saída deve ser igual ou posterior a hoje.',
   'The given data was invalid.': 'Os dados enviados são inválidos.',
   'The selected user id is invalid.': 'O usuário selecionado é inválido.',
   'The email field is required.': 'O e-mail é obrigatório.',

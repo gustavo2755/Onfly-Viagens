@@ -12,6 +12,10 @@ const toast = useToast()
 const travelOrderStore = useTravelOrderStore()
 
 async function handleSubmit(payload) {
+  if (payload.__validationError) {
+    toast.error(payload.__validationError)
+    return
+  }
   try {
     await travelOrderStore.create(payload)
     toast.success('Pedido criado com sucesso')

@@ -61,6 +61,55 @@ class TravelOrderApiTest extends TestCase
         $response->assertStatus(422)->assertJsonStructure(['message', 'errors']);
     }
 
+    public function test_create_order_with_departure_date_before_today_returns_422(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/travel-orders', [
+            'requester_name' => 'John Doe',
+            'destination' => 'Lisbon',
+            'departure_date' => now()->subDay()->toDateString(),
+            'return_date' => now()->addDays(3)->toDateString(),
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors' => ['departure_date']])
+            ->assertJsonPath('errors.departure_date.0', 'A data de saída deve ser igual ou posterior a hoje.');
+    }
+
+    public function test_create_order_with_return_date_before_departure_returns_422(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/travel-orders', [
+            'requester_name' => 'John Doe',
+            'destination' => 'Lisbon',
+            'departure_date' => now()->addDays(5)->toDateString(),
+            'return_date' => now()->addDays(2)->toDateString(),
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors' => ['return_date']])
+            ->assertJsonPath('errors.return_date.0', 'A data de retorno deve ser igual ou posterior à data de saída.');
+    }
+
+    public function test_create_order_with_departure_date_today_succeeds(): void
+    {
+        $user = User::factory()->create();
+        $today = now()->toDateString();
+
+        $response = $this->actingAs($user, 'sanctum')->postJson('/api/travel-orders', [
+            'requester_name' => 'John Doe',
+            'destination' => 'Lisbon',
+            'departure_date' => $today,
+            'return_date' => now()->addDays(2)->toDateString(),
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.departure_date', $today);
+        $this->assertDatabaseHas('travel_orders', ['user_id' => $user->id]);
+    }
+
     public function test_create_order_requires_required_fields(): void
     {
         $user = User::factory()->create();
