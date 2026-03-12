@@ -21,6 +21,15 @@ const menuOpen = ref(false)
 
 const apiDocsUrl = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080') + '/api/documentation'
 
+const navLinkClass =
+  'flex items-center gap-2 rounded-lg px-3 py-2 font-medium transition'
+const navLinkBase = 'text-slate-600 hover:bg-sky-100 hover:text-sky-700'
+const navLinkActive = 'bg-sky-100 text-sky-700 ring-1 ring-sky-200'
+
+function isPedidosActive(path) {
+  return path === '/travel-orders' || (path.startsWith('/travel-orders/') && path !== '/travel-orders/create')
+}
+
 async function handleLogout() {
   await authStore.signOut()
   toast.success('Sessão encerrada')
@@ -67,24 +76,21 @@ watch(
     <nav class="hidden border-b border-slate-200 bg-white shadow-sm md:block">
       <div class="layout-container flex gap-1 py-3 text-sm">
         <RouterLink
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders' }"
+          :class="[navLinkClass, navLinkBase, isPedidosActive($route.path) && navLinkActive]"
           to="/travel-orders"
         >
           <DocumentTextIcon class="size-4" />
           Pedidos
         </RouterLink>
         <RouterLink
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders/create' }"
+          :class="[navLinkClass, navLinkBase, $route.path === '/travel-orders/create' && navLinkActive]"
           to="/travel-orders/create"
         >
           <PlusIcon class="size-4" />
           Novo Pedido
         </RouterLink>
         <RouterLink
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/notifications' }"
+          :class="[navLinkClass, navLinkBase, $route.path === '/notifications' && navLinkActive]"
           to="/notifications"
         >
           <BellIcon class="size-4" />
@@ -92,8 +98,7 @@ watch(
         </RouterLink>
         <RouterLink
           v-if="authStore.isAdmin"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/dashboard' }"
+          :class="[navLinkClass, navLinkBase, $route.path === '/dashboard' && navLinkActive]"
           to="/dashboard"
         >
           <ChartBarIcon class="size-4" />
@@ -101,7 +106,7 @@ watch(
         </RouterLink>
         <a
           v-if="authStore.isAdmin"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :class="[navLinkClass, navLinkBase]"
           :href="apiDocsUrl"
           target="_blank"
         >
@@ -148,8 +153,7 @@ watch(
                 <NotificationBell />
               </div>
               <RouterLink
-                class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-                :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders' }"
+                :class="[navLinkClass, navLinkBase, isPedidosActive($route.path) && navLinkActive]"
                 to="/travel-orders"
                 @click="closeMenu"
               >
@@ -157,8 +161,7 @@ watch(
                 Pedidos
               </RouterLink>
               <RouterLink
-                class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-                :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders/create' }"
+                :class="[navLinkClass, navLinkBase, $route.path === '/travel-orders/create' && navLinkActive]"
                 to="/travel-orders/create"
                 @click="closeMenu"
               >
@@ -166,8 +169,7 @@ watch(
                 Novo Pedido
               </RouterLink>
               <RouterLink
-                class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-                :class="{ 'bg-slate-50 text-sky-600': $route.path === '/notifications' }"
+                :class="[navLinkClass, navLinkBase, $route.path === '/notifications' && navLinkActive]"
                 to="/notifications"
                 @click="closeMenu"
               >
@@ -176,8 +178,7 @@ watch(
               </RouterLink>
               <RouterLink
                 v-if="authStore.isAdmin"
-                class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
-                :class="{ 'bg-slate-50 text-sky-600': $route.path === '/dashboard' }"
+                :class="[navLinkClass, navLinkBase, $route.path === '/dashboard' && navLinkActive]"
                 to="/dashboard"
                 @click="closeMenu"
               >
@@ -186,7 +187,7 @@ watch(
               </RouterLink>
               <a
                 v-if="authStore.isAdmin"
-                class="flex items-center gap-2 rounded-lg px-3 py-2.5 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+                :class="[navLinkClass, navLinkBase]"
                 :href="apiDocsUrl"
                 target="_blank"
                 @click="closeMenu"
