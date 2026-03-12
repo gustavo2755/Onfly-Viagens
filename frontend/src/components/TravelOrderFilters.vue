@@ -1,15 +1,24 @@
 <script setup>
+import {
+  CalendarDaysIcon,
+  MapPinIcon,
+  TagIcon,
+  TrashIcon,
+  UserCircleIcon,
+  UserIcon,
+} from '@heroicons/vue/24/outline'
 import { reactive, watch } from 'vue'
+import FilterDateInput from './FilterDateInput.vue'
+import FilterField from './FilterField.vue'
+import FilterSelect from './FilterSelect.vue'
+import SearchInput from './SearchInput.vue'
+import UserSearchCombobox from './UserSearchCombobox.vue'
 import { useDebounce } from '../composables/useDebounce'
 
 const props = defineProps({
   modelValue: {
     type: Object,
     required: true,
-  },
-  users: {
-    type: Array,
-    default: () => [],
   },
   isAdmin: {
     type: Boolean,
@@ -19,15 +28,17 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'search'])
 
-const STATUS_LABELS = {
-  requested: 'Solicitado',
-  approved: 'Aprovado',
-  cancelled: 'Cancelado',
-}
+const STATUS_OPTIONS = [
+  { value: '', label: 'Todos status' },
+  { value: 'requested', label: 'Solicitado' },
+  { value: 'approved', label: 'Aprovado' },
+  { value: 'cancelled', label: 'Cancelado' },
+]
 
 const localFilters = reactive({
   status: props.modelValue.status || '',
   destination: props.modelValue.destination || '',
+  requester_name: props.modelValue.requester_name || '',
   user_id: props.modelValue.user_id || '',
   departure_from: props.modelValue.departure_from || '',
   departure_to: props.modelValue.departure_to || '',
@@ -38,6 +49,7 @@ watch(
   (value) => {
     localFilters.status = value.status || ''
     localFilters.destination = value.destination || ''
+    localFilters.requester_name = value.requester_name || ''
     localFilters.user_id = value.user_id || ''
     localFilters.departure_from = value.departure_from || ''
     localFilters.departure_to = value.departure_to || ''
@@ -50,6 +62,7 @@ function buildEmitPayload() {
     ...props.modelValue,
     status: localFilters.status,
     destination: localFilters.destination,
+    requester_name: localFilters.requester_name,
     user_id: localFilters.user_id,
     departure_from: localFilters.departure_from,
     departure_to: localFilters.departure_to,
@@ -67,12 +80,14 @@ const debouncedApply = useDebounce(apply, 400)
 function clearFilters() {
   localFilters.status = ''
   localFilters.destination = ''
+  localFilters.requester_name = ''
   localFilters.user_id = ''
   localFilters.departure_from = ''
   localFilters.departure_to = ''
   emit('update:modelValue', {
     status: '',
     destination: '',
+    requester_name: '',
     user_id: '',
     departure_from: '',
     departure_to: '',
@@ -84,55 +99,63 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="grid gap-3 rounded bg-white p-4 shadow sm:grid-cols-2 lg:grid-cols-4">
-    <select v-model="localFilters.status" class="rounded border px-3 py-2 text-sm" @change="debouncedApply">
-      <option value="">Todos status</option>
-      <option value="requested">{{ STATUS_LABELS.requested }}</option>
-      <option value="approved">{{ STATUS_LABELS.approved }}</option>
-      <option value="cancelled">{{ STATUS_LABELS.cancelled }}</option>
-    </select>
+  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <FilterField label="Status" :icon="TagIcon">
+        <FilterSelect
+          :model-value="localFilters.status"
+          :options="STATUS_OPTIONS"
+          @update:model-value="(v) => { localFilters.status = v; debouncedApply() }"
+        />
+      </FilterField>
 
-    <select
-      v-if="isAdmin"
-      v-model="localFilters.user_id"
-      class="rounded border px-3 py-2 text-sm"
-      @change="debouncedApply"
-    >
-      <option value="">Todos usuarios</option>
-      <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
-    </select>
+      <FilterField v-if="isAdmin" label="Usuário" :icon="UserIcon">
+        <UserSearchCombobox
+          :model-value="localFilters.user_id"
+          @update:model-value="(val) => { localFilters.user_id = val; debouncedApply() }"
+        />
+      </FilterField>
 
-    <input
-      v-model="localFilters.destination"
-      type="text"
-      placeholder="Destino"
-      class="rounded border px-3 py-2 text-sm"
-      @input="debouncedApply"
-    />
+      <FilterField label="Solicitante" :icon="UserCircleIcon">
+        <SearchInput
+          :model-value="localFilters.requester_name"
+          placeholder="Ex: João Silva"
+          @update:model-value="(v) => { localFilters.requester_name = v; debouncedApply() }"
+        />
+      </FilterField>
 
-    <div class="flex gap-2">
-      <button class="rounded border px-3 py-2 text-sm" @click="clearFilters">Limpar</button>
+      <FilterField label="Destino" :icon="MapPinIcon">
+        <SearchInput
+          :model-value="localFilters.destination"
+          placeholder="Ex: Lisboa"
+          @update:model-value="(v) => { localFilters.destination = v; debouncedApply() }"
+        />
+      </FilterField>
+
+      <div class="flex items-end gap-2">
+        <button
+          class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+          @click="clearFilters"
+        >
+          <TrashIcon class="size-4" />
+          Limpar
+        </button>
+      </div>
     </div>
 
-    <div class="sm:col-span-2 lg:col-span-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <div>
-        <label class="mb-1 block text-xs text-slate-500">Data de partida (de)</label>
-        <input
-          v-model="localFilters.departure_from"
-          type="date"
-          class="w-full rounded border px-3 py-2 text-sm"
-          @change="debouncedApply"
+    <div class="mt-4 grid gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-4">
+      <FilterField label="Data de partida (de)" :icon="CalendarDaysIcon">
+        <FilterDateInput
+          :model-value="localFilters.departure_from"
+          @update:model-value="(v) => { localFilters.departure_from = v; debouncedApply() }"
         />
-      </div>
-      <div>
-        <label class="mb-1 block text-xs text-slate-500">Data de partida (ate)</label>
-        <input
-          v-model="localFilters.departure_to"
-          type="date"
-          class="w-full rounded border px-3 py-2 text-sm"
-          @change="debouncedApply"
+      </FilterField>
+      <FilterField label="Data de partida (até)" :icon="CalendarDaysIcon">
+        <FilterDateInput
+          :model-value="localFilters.departure_to"
+          @update:model-value="(v) => { localFilters.departure_to = v; debouncedApply() }"
         />
-      </div>
+      </FilterField>
     </div>
   </div>
 </template>

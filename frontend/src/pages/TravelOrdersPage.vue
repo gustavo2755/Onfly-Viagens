@@ -1,5 +1,7 @@
 <script setup>
+import { DocumentTextIcon } from '@heroicons/vue/24/outline'
 import { onMounted, reactive, ref } from 'vue'
+import { getErrorMessage } from '../utils/errorMessage'
 import { useToast } from 'vue-toastification'
 import AppLayout from '../layouts/AppLayout.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
@@ -10,8 +12,6 @@ import TravelOrderFilters from '../components/TravelOrderFilters.vue'
 import TravelOrderTable from '../components/TravelOrderTable.vue'
 import { useAuthStore } from '../stores/authStore'
 import { useTravelOrderStore } from '../stores/travelOrderStore'
-import { listUsers } from '../services/userService'
-
 const authStore = useAuthStore()
 const travelOrderStore = useTravelOrderStore()
 const toast = useToast()
@@ -19,24 +19,13 @@ const toast = useToast()
 const filters = reactive({
   status: '',
   destination: '',
+  requester_name: '',
   user_id: '',
   departure_from: '',
   departure_to: '',
   page: 1,
   per_page: 10,
 })
-
-const users = ref([])
-
-async function loadUsers() {
-  if (!authStore.isAdmin) return
-  try {
-    const data = await listUsers()
-    users.value = data.data || []
-  } catch {
-    users.value = []
-  }
-}
 
 const detailModalOpen = ref(false)
 const selectedOrderForDetail = ref(null)
@@ -50,7 +39,7 @@ async function loadData() {
   try {
     await travelOrderStore.fetchList(filters)
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Erro ao carregar pedidos')
+    toast.error(getErrorMessage(error))
   }
 }
 
@@ -63,7 +52,10 @@ function askStatusChange(order, status) {
   selectedOrder.value = order
   nextStatus.value = status
   confirmTitle.value = status === 'approved' ? 'Aprovar pedido' : 'Cancelar pedido'
-  confirmDescription.value = `Confirmar alteracao para status ${status}?`
+  confirmDescription.value =
+    status === 'approved'
+      ? `Deseja aprovar o pedido #${order.id} de ${order.requester_name}?`
+      : `Deseja cancelar o pedido #${order.id} de ${order.requester_name}?`
   confirmOpen.value = true
 }
 
@@ -77,7 +69,7 @@ async function confirmStatusChange() {
     toast.success('Status atualizado')
     await loadData()
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Falha ao atualizar status')
+    toast.error(getErrorMessage(error))
   } finally {
     confirmOpen.value = false
   }
@@ -89,19 +81,20 @@ async function changePage(page) {
 }
 
 onMounted(() => {
-  loadUsers()
   loadData()
 })
 </script>
 
 <template>
   <AppLayout>
-    <div class="space-y-4">
-      <h2 class="text-xl font-semibold">Pedidos de viagem</h2>
+    <div class="space-y-6">
+      <h2 class="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-800">
+        <DocumentTextIcon class="size-7 text-sky-600" />
+        Pedidos de viagem
+      </h2>
 
       <TravelOrderFilters
         :modelValue="filters"
-        :users="users"
         :is-admin="authStore.isAdmin"
         @update:modelValue="Object.assign(filters, $event)"
         @search="loadData"
@@ -130,6 +123,7 @@ onMounted(() => {
       :open="confirmOpen"
       :title="confirmTitle"
       :description="confirmDescription"
+      :variant="nextStatus === 'cancelled' ? 'danger' : 'default'"
       @cancel="confirmOpen = false"
       @confirm="confirmStatusChange"
     />

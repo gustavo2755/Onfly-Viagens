@@ -23,6 +23,7 @@ Token Bearer via Sanctum. Enviar header: `Authorization: Bearer {token}`.
 ## Usuarios (admin)
 
 - `GET /api/users` (auth, admin) - Lista usuarios para filtro de pedidos
+  - Query: `search` (opcional) - filtra por nome ou email (busca parcial, case-insensitive)
 
 ## Travel Orders
 
@@ -81,6 +82,7 @@ Valores permitidos: `approved`, `cancelled`. Apenas admin.
 
 - `status` - requested | approved | cancelled
 - `destination` - string 2-120 chars
+- `requester_name` - string 2-120 chars (busca parcial no nome do solicitante)
 - `user_id` - ID do usuario (apenas admin, filtra pedidos do usuario)
 - `departure_from`, `departure_to` - datas (departure_to >= departure_from)
 - `page`, `per_page` - paginacao (per_page max 50)

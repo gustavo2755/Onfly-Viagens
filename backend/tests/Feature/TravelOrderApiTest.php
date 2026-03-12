@@ -229,6 +229,20 @@ class TravelOrderApiTest extends TestCase
             ->assertJsonPath('data.0.destination', 'Sao Paulo');
     }
 
+    public function test_filter_by_requester_name(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['requester_name' => 'Maria Santos']);
+        TravelOrder::factory()->create(['requester_name' => 'João Silva']);
+        TravelOrder::factory()->create(['requester_name' => 'Maria Oliveira']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?requester_name=Maria');
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(2, 'data');
+    }
+
     public function test_filter_by_user_id_admin_only(): void
     {
         $admin = User::factory()->admin()->create();

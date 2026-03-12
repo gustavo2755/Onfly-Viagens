@@ -40,4 +40,30 @@ class UserApiTest extends TestCase
             ])
             ->assertJsonCount(3, 'data');
     }
+
+    public function test_admin_can_search_users_by_name(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->create(['name' => 'Alice Smith', 'email' => 'alice@test.com']);
+        User::factory()->create(['name' => 'Bob Johnson', 'email' => 'bob@test.com']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/users?search=alice');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Alice Smith');
+    }
+
+    public function test_admin_can_search_users_by_email(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->create(['name' => 'Alice Smith', 'email' => 'alice@test.com']);
+        User::factory()->create(['name' => 'Bob Johnson', 'email' => 'bob@test.com']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/users?search=bob@');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.email', 'bob@test.com');
+    }
 }

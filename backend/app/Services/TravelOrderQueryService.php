@@ -75,6 +75,7 @@ class TravelOrderQueryService implements TravelOrderQueryServiceInterface
             ->when($user->isAdmin() && !empty($filters['user_id']), fn (Builder $query) => $query->where('user_id', $filters['user_id']))
             ->when(!empty($filters['status']), fn (Builder $query) => $query->where('status', $filters['status']))
             ->when(!empty($filters['destination']), fn (Builder $query) => $query->where('destination', 'like', '%'.$filters['destination'].'%'))
+            ->when(!empty($filters['requester_name']), fn (Builder $query) => $query->where('requester_name', 'like', '%'.$filters['requester_name'].'%'))
             ->when(!empty($filters['departure_from']), fn (Builder $query) => $query->whereDate('departure_date', '>=', $filters['departure_from']))
             ->when(!empty($filters['departure_to']), fn (Builder $query) => $query->whereDate('departure_date', '<=', $filters['departure_to']))
             ->orderByDesc('id');

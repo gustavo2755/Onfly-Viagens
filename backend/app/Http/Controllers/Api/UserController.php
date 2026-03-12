@@ -15,9 +15,17 @@ class UserController extends Controller
             abort(403, 'This action is unauthorized.');
         }
 
-        $users = User::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
+        $query = User::query()->orderBy('name');
+
+        $search = $request->query('search');
+        if (is_string($search) && $search !== '') {
+            $term = '%' . $search . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', $term)->orWhere('email', 'like', $term);
+            });
+        }
+
+        $users = $query->limit(50)->get(['id', 'name', 'email']);
 
         return UserListResource::collection($users)->additional([
             'message' => 'Users retrieved successfully.',

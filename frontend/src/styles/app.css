@@ -8,7 +8,7 @@
 }
 
 body {
-  @apply bg-slate-100 text-slate-900 min-h-screen;
+  @apply min-h-screen bg-slate-100/80 text-slate-900 antialiased;
 }
 
 #app {

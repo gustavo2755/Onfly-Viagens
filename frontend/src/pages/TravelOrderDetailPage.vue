@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { getErrorMessage } from '../utils/errorMessage'
 import AppLayout from '../layouts/AppLayout.vue'
 import LoadingSpinner from '../components/LoadingSpinner.vue'
 import StatusBadge from '../components/StatusBadge.vue'
@@ -15,7 +16,7 @@ async function loadOrder() {
   try {
     await travelOrderStore.fetchOne(route.params.id)
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Falha ao carregar pedido')
+    toast.error(getErrorMessage(error))
   }
 }
 

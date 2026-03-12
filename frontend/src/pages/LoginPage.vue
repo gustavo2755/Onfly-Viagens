@@ -2,6 +2,7 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { getErrorMessage } from '../utils/errorMessage'
 import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
@@ -19,7 +20,7 @@ async function submit() {
     toast.success('Login realizado')
     router.push({ name: 'travel-orders' })
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Falha no login')
+    toast.error(getErrorMessage(error))
   }
 }
 </script>

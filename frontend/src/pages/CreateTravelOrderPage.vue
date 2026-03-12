@@ -1,6 +1,8 @@
 <script setup>
+import { PlusIcon } from '@heroicons/vue/24/outline'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { getErrorMessage } from '../utils/errorMessage'
 import AppLayout from '../layouts/AppLayout.vue'
 import TravelOrderForm from '../components/TravelOrderForm.vue'
 import { useTravelOrderStore } from '../stores/travelOrderStore'
@@ -15,15 +17,18 @@ async function handleSubmit(payload) {
     toast.success('Pedido criado com sucesso')
     router.push({ name: 'travel-orders' })
   } catch (error) {
-    toast.error(error.response?.data?.message || 'Erro ao criar pedido')
+    toast.error(getErrorMessage(error))
   }
 }
 </script>
 
 <template>
   <AppLayout>
-    <div class="space-y-4">
-      <h2 class="text-xl font-semibold">Novo pedido de viagem</h2>
+    <div class="space-y-6">
+      <h2 class="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-800">
+        <PlusIcon class="size-7 text-sky-600" />
+        Novo pedido de viagem
+      </h2>
       <TravelOrderForm @submit="handleSubmit" />
     </div>
   </AppLayout>

@@ -105,6 +105,9 @@ class OpenApiSpec
         tags: ['Users'],
         summary: 'Listar usuarios (admin)',
         security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'search', in: 'query', required: false, schema: new OA\Schema(type: 'string'), description: 'Filtra por nome ou email (busca parcial)'),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Lista de usuarios'),
             new OA\Response(response: 403, description: 'Sem permissao'),
@@ -120,6 +123,7 @@ class OpenApiSpec
         parameters: [
             new OA\Parameter(name: 'status', in: 'query', schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'destination', in: 'query', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'requester_name', in: 'query', schema: new OA\Schema(type: 'string'), description: 'Busca parcial no nome do solicitante'),
             new OA\Parameter(name: 'user_id', in: 'query', schema: new OA\Schema(type: 'integer'), description: 'Admin only'),
             new OA\Parameter(name: 'departure_from', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),
             new OA\Parameter(name: 'departure_to', in: 'query', schema: new OA\Schema(type: 'string', format: 'date')),

@@ -1,4 +1,5 @@
 <script setup>
+import { ChartBarIcon, DocumentTextIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '../stores/authStore'
@@ -28,17 +29,37 @@ async function handleLogout() {
       </div>
     </header>
 
-    <nav class="border-b bg-white">
-      <div class="mx-auto flex max-w-6xl gap-4 px-4 py-3 text-sm">
-        <RouterLink class="text-slate-700 hover:text-sky-600" to="/travel-orders">Pedidos</RouterLink>
-        <RouterLink class="text-slate-700 hover:text-sky-600" to="/travel-orders/create">Novo Pedido</RouterLink>
-        <RouterLink v-if="authStore.isAdmin" class="text-slate-700 hover:text-sky-600" to="/dashboard">
+    <nav class="border-b border-slate-200 bg-white shadow-sm">
+      <div class="mx-auto flex max-w-6xl gap-1 px-4 py-3 text-sm">
+        <RouterLink
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders' }"
+          to="/travel-orders"
+        >
+          <DocumentTextIcon class="size-4" />
+          Pedidos
+        </RouterLink>
+        <RouterLink
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/travel-orders/create' }"
+          to="/travel-orders/create"
+        >
+          <PlusIcon class="size-4" />
+          Novo Pedido
+        </RouterLink>
+        <RouterLink
+          v-if="authStore.isAdmin"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/dashboard' }"
+          to="/dashboard"
+        >
+          <ChartBarIcon class="size-4" />
           Dashboard
         </RouterLink>
       </div>
     </nav>
 
-    <main class="mx-auto max-w-6xl px-4 py-6">
+    <main class="mx-auto max-w-6xl px-4 py-8">
       <slot />
     </main>
   </div>
