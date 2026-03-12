@@ -1,172 +1,211 @@
 # Travel Orders
 
-Aplicacao Full Stack para gerenciamento de pedidos de viagem corporativa, organizada em duas etapas de desenvolvimento.
+Aplicação full stack para gerenciamento de pedidos de viagem corporativa. Usuários criam pedidos de viagem; administradores aprovam ou cancelam. API REST consumida por SPA Vue 3.
 
 ## Stack
 
-- Back-end: Laravel 12, Sanctum, Notifications, Redis, PHPUnit (SQLite em testes)
-- Controle de acesso: Spatie Laravel Permission (roles)
-- Front-end: Vue 3, Vite, Pinia (etapa 2)
-- Infra: Docker Compose (backend: PHP 8.3, Nginx, MySQL, Redis). Frontend roda localmente com Node.
+**Backend**
+- Laravel 12, PHP 8.3
+- Laravel Sanctum (autenticação por token)
+- Spatie Laravel Permission (roles: `admin`, `user`)
+- Redis (cache)
+- MySQL 8.4
+- PHPUnit (testes com SQLite em memória)
+- L5-Swagger (documentação OpenAPI)
 
-## Arquitetura
+**Frontend**
+- Vue 3, Vite, Pinia, Vue Router
+- Axios (interceptor Bearer)
+- Tailwind CSS, Headless UI, Heroicons
+- Vue Toastification
 
-- `backend/`: API REST API-first em Laravel
-- `frontend/`: SPA Vue 3 consumindo a API Laravel
-- `docker/`: definicoes de containers
-- `docker-compose.yml`: orquestracao unica do ecossistema
+**Infra**
+- Docker Compose: PHP-FPM, Nginx, MySQL, Redis
+- Frontend roda localmente com Node (Vite proxy para API)
 
-### Decisoes principais
+## Estrutura do projeto
 
-- Autenticacao por token via Sanctum (opcao oficial Laravel para APIs e SPAs, aderente ao requisito de autenticacao simples por token).
-- Autorizacao com `spatie/laravel-permission` usando apenas roles neste momento (`admin` e `user`), sem permissões granulares por enquanto.
-- Controllers enxutos, regras de negocio em Services, validacao em Form Requests, serializacao em API Resources e autorizacao por Policy.
-- Cache aplicado apenas em dashboard/listagem admin com invalidacao simples por versionamento de chave.
-
-## Estrutura
-
-```text
+```
 travel-orders/
-├── backend/
-├── frontend/
-├── docker/
-│   ├── frontend/
-│   ├── mysql/
-│   ├── nginx/
-│   └── php/
+├── backend/          # API Laravel
+├── frontend/         # SPA Vue 3
+├── docker/           # Dockerfiles e configs (nginx, php, mysql)
+├── docs/images/      # Screenshots da interface
 ├── docker-compose.yml
 └── README.md
 ```
 
-## Como executar com Docker
+## Interface do sistema
 
-1. Entre na pasta raiz:
-   - `cd travel-orders`
-2. Copie o env do backend:
-   - `cp backend/.env.example backend/.env`
-3. Suba os containers (backend):
-   - `docker compose up -d --build`
-4. Instale dependencias PHP dentro do container app (se necessario):
-   - `docker compose exec app composer install`
-5. Gere chave e rode migrations:
-   - `docker compose exec app php artisan key:generate`
-   - `docker compose exec app php artisan migrate --seed`
+### Login
 
-Back-end ficara disponivel em `http://localhost:8080`.
+Tela de autenticação com campos de e-mail e senha. Layout dividido: imagem de fundo à esquerda e formulário à direita com logo onfly.
 
-## Como rodar backend isolado (sem Docker)
+![Login](docs/images/login-example.png)
 
-1. `cd backend`
-2. `cp .env.example .env`
-3. `composer install`
-4. `php artisan key:generate`
-5. Ajuste banco no `.env`
-6. `php artisan migrate --seed`
-7. `php artisan serve`
+### Listagem de pedidos
 
-## Como rodar o frontend (local)
+Página principal de pedidos com filtros (status, usuário, solicitante, destino, datas), tabela com colunas ID, Solicitante, Destino, Saída, Retorno, Status e Ações. Admin vê botões Aprovar/Cancelar em pedidos solicitados; paginação na parte inferior.
 
-O frontend roda na maquina local, nao em Docker. O proxy do Vite encaminha `/api` para `http://localhost:8080`.
+![Listagem de pedidos](docs/images/travel-orders-list-example.png)
 
-1. Suba o backend com Docker: `docker compose up -d`
-2. `cd frontend`
-3. `npm install`
-4. `npm run dev`
+### Novo pedido
 
-Frontend em `http://localhost:5173`. Requisicoes a `/api` sao proxeadas para o backend em `http://localhost:8080`.
+Formulário para criar pedido: nome do solicitante, destino, data de saída e data de retorno. Validação em português; data de saída não pode ser anterior a hoje; data de retorno deve ser igual ou posterior à de saída.
 
-## Variaveis de ambiente (backend)
+![Novo pedido](docs/images/travel-orders-create-example.png)
 
-Principais variaveis em `backend/.env`:
+### Dashboard (admin)
 
-- `APP_URL` (ex: `http://localhost:8080`)
-- `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
-- `CACHE_STORE` (redis em producao, array em testes)
-- `REDIS_HOST`, `REDIS_PORT`
-- `L5_SWAGGER_CONST_HOST` (URL do servidor para Swagger UI, ex: `http://localhost:8080`)
+Visão geral com cards de totais (Total, Solicitado, Aprovado, Cancelado) e tabela das últimas alterações de status com colunas Pedido, Admin, De, Para, Quando e Ações (botão Detalhe).
 
-## Migrations e Seeders
+![Dashboard](docs/images/dashboard-example.png)
 
-- Rodar migrations:
-  - `php artisan migrate`
-- Rodar seeders:
-  - `php artisan db:seed`
-- Reset completo:
-  - `php artisan migrate:fresh --seed`
+## Como rodar o sistema
+
+### Com Docker (recomendado)
+
+1. Na raiz do projeto:
+   ```bash
+   cd travel-orders
+   cp backend/.env.example backend/.env
+   docker compose up -d --build
+   ```
+
+2. Instalar dependências e configurar o backend:
+   ```bash
+   docker compose exec app composer install
+   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan migrate --seed
+   ```
+
+3. Rodar o frontend (na máquina local):
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+- **Backend:** http://localhost:8080  
+- **Frontend:** http://localhost:5173  
+- O Vite faz proxy de `/api` para `http://localhost:8080`
+
+### Backend sem Docker
+
+```bash
+cd backend
+cp .env.example .env
+composer install
+php artisan key:generate
+# Ajuste DB_* no .env para seu MySQL
+php artisan migrate --seed
+php artisan serve
+```
+
+### Frontend
+
+O frontend sempre roda localmente. O `.env` do frontend pode ter `VITE_API_BASE_URL` se a API estiver em outra URL. Por padrão o proxy do Vite usa `http://localhost:8080`.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Build para produção: `npm run build`
+
+## Variáveis de ambiente (backend)
+
+Em `backend/.env`:
+
+| Variável | Descrição |
+|----------|------------|
+| `APP_URL` | URL do backend (ex: `http://localhost:8080`) |
+| `DB_CONNECTION`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | Conexão MySQL |
+| `CACHE_STORE` | `redis` em produção, `array` em testes |
+| `REDIS_HOST`, `REDIS_PORT` | Redis |
+| `L5_SWAGGER_CONST_HOST` | URL para Swagger UI |
 
 ## Testes
 
-Os testes usam **SQLite em memoria** (`:memory:`), configurado em `phpunit.xml`, garantindo banco novo a cada execucao.
+Os testes usam SQLite em memória (`:memory:`), configurado em `phpunit.xml`.
 
-- Executar localmente:
-  - `cd backend && php artisan test`
-- Executar dentro do Docker:
-  - `docker compose exec app php artisan test`
+**Localmente:**
+```bash
+cd backend
+php artisan test
+```
 
-O `phpunit.xml` define `DB_CONNECTION=sqlite` e `DB_DATABASE=:memory:` para testes, independente do `.env`.
+**No Docker:**
+```bash
+docker compose exec app php artisan test
+```
 
-## Swagger (L5-Swagger)
+**Teste específico:**
+```bash
+php artisan test --filter=TravelOrderApiTest
+```
 
-- Gerar documentacao OpenAPI:
-  - `php artisan l5-swagger:generate`
-- Abrir UI Swagger (requer role admin):
-  - `http://localhost:8080/api/documentation`
-  - Autenticacao: Bearer token no header ou `?token=SEU_TOKEN` na URL
-- JSON gerado:
-  - `backend/storage/api-docs/api-docs.json`
+## Migrations e seeders
 
-A especificacao esta em `backend/app/OpenApi/OpenApiSpec.php`.
+```bash
+php artisan migrate
+php artisan db:seed
+php artisan migrate:fresh --seed   # reset completo
+```
 
-## Credenciais seed
+## Swagger (documentação da API)
 
-- Admin:
-  - `email: admin@travelorders.test`
-  - `password: password`
-  - `role: admin`
-- Usuario comum:
-  - `email: user@travelorders.test`
-  - `password: password`
-  - `role: user`
+- Gerar OpenAPI: `php artisan l5-swagger:generate`
+- UI: http://localhost:8080/api/documentation (requer login como admin)
+- Autenticação: Bearer token no header ou `?token=SEU_TOKEN` na URL
+- Especificação: `backend/app/OpenApi/OpenApiSpec.php`
 
-Para testar login via API, use `POST /api/auth/login` com as credenciais acima.
+## Credenciais (seed)
 
-## Endpoints da API (etapa 1)
+| Role | Email | Senha |
+|------|-------|-------|
+| Admin | admin@travelorders.test | password |
+| Usuário | user@travelorders.test | password |
 
-Autenticacao:
+## Funcionalidades
 
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
-- `GET /api/users` (admin)
+### Autenticação
+- Login via `POST /api/auth/login` (retorna token)
+- Logout e `GET /api/auth/me` com Bearer token
 
-Pedidos:
+### Pedidos de viagem
+- **Criar:** nome do solicitante, destino, data de saída, data de retorno
+- **Validações:** data de saída ≥ hoje; data de retorno ≥ data de saída; nome 3–120 chars; destino 2–120 chars
+- **Status:** `requested` → `approved` ou `cancelled` (apenas admin; aprovado não pode ser cancelado)
 
-- `GET /api/travel-orders`
-- `POST /api/travel-orders`
-- `GET /api/travel-orders/{id}`
-- `PATCH /api/travel-orders/{id}/status`
-- `GET /api/travel-orders/dashboard`
-- `GET /api/travel-orders/status-logs` (admin)
+### Permissões
+- **User:** vê e cria apenas seus pedidos
+- **Admin:** vê todos, aprova/cancela, dashboard, logs de status, lista usuários
 
-Filtros de listagem: `status`, `destination`, `user_id` (admin), `departure_from`, `departure_to`
+### API – principais endpoints
 
-Estrutura TravelOrder: `id`, `user_id`, `requester_name`, `destination`, `departure_date`, `return_date`, `departure_date_br`, `return_date_br` (dd/mm/yyyy), `status`, `created_at`, `updated_at`
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/auth/login` | Login |
+| POST | `/api/auth/logout` | Logout |
+| GET | `/api/auth/me` | Usuário autenticado |
+| GET | `/api/users` | Lista usuários (admin) |
+| GET | `/api/travel-orders` | Lista pedidos (com filtros) |
+| POST | `/api/travel-orders` | Criar pedido |
+| GET | `/api/travel-orders/{id}` | Detalhe do pedido |
+| PATCH | `/api/travel-orders/{id}/status` | Atualizar status (admin) |
+| GET | `/api/travel-orders/dashboard` | Contadores (admin) |
+| GET | `/api/travel-orders/status-logs` | Logs de mudança de status (admin) |
 
-## Fluxo por etapas
+**Filtros na listagem:** `status`, `destination`, `requester_name`, `user_id` (admin), `departure_from`, `departure_to`, `page`, `per_page`
 
-1. Etapa 1: Back-end completo (concluida nesta entrega).
-2. Etapa 2: Front-end Vue completo (concluida nesta entrega).
+## Frontend – páginas e recursos
 
-## Frontend (Etapa 2)
-
-- Vue 3 + Vite + Pinia + Vue Router
-- Axios com interceptor Bearer token
-- Tailwind CSS para UI responsiva
-- Vue Toastification para feedback de sucesso/erro
-- Rotas protegidas por autenticacao e role admin
-- Paginas implementadas:
-  - `LoginPage`
-  - `TravelOrdersPage`
-  - `CreateTravelOrderPage`
-  - `TravelOrderDetailPage`
-  - `DashboardPage` (admin)
+- **Login** – autenticação com token
+- **Pedidos** – listagem com filtros, paginação, busca
+- **Novo pedido** – formulário com validação em português
+- **Detalhe do pedido** – visualização e ações (admin)
+- **Dashboard** – totais por status (admin)
+- Rotas protegidas por autenticação e role admin
+- Mensagens de validação em português; erros genéricos padronizados
