@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::table('travel_orders', function (Blueprint $table) {
             $table->index(['user_id', 'status', 'departure_date'], 'travel_orders_user_status_departure_idx');
             $table->index('departure_date', 'travel_orders_departure_date_idx');
+            $table->index('created_at', 'travel_orders_created_at_idx');
             $table->index('destination', 'travel_orders_destination_idx');
             $table->index('requester_name', 'travel_orders_requester_name_idx');
         });
@@ -21,6 +22,7 @@ return new class extends Migration
         Schema::table('travel_orders', function (Blueprint $table) {
             $table->dropIndex('travel_orders_user_status_departure_idx');
             $table->dropIndex('travel_orders_departure_date_idx');
+            $table->dropIndex('travel_orders_created_at_idx');
             $table->dropIndex('travel_orders_destination_idx');
             $table->dropIndex('travel_orders_requester_name_idx');
         });

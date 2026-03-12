@@ -15,6 +15,7 @@ import { useTravelOrderStore } from '../stores/travelOrderStore'
 const authStore = useAuthStore()
 const travelOrderStore = useTravelOrderStore()
 const toast = useToast()
+const statusChangeLoading = ref(false)
 
 const filters = reactive({
   status: '',
@@ -23,6 +24,8 @@ const filters = reactive({
   user_id: '',
   departure_from: '',
   departure_to: '',
+  created_from: '',
+  created_to: '',
   page: 1,
   per_page: 10,
 })
@@ -64,6 +67,7 @@ async function confirmStatusChange() {
     return
   }
 
+  statusChangeLoading.value = true
   try {
     await travelOrderStore.changeStatus(selectedOrder.value.id, nextStatus.value)
     toast.success('Status atualizado')
@@ -74,6 +78,7 @@ async function confirmStatusChange() {
       await loadData()
     }
   } finally {
+    statusChangeLoading.value = false
     confirmOpen.value = false
   }
 }
@@ -127,6 +132,7 @@ onMounted(() => {
       :title="confirmTitle"
       :description="confirmDescription"
       :variant="nextStatus === 'cancelled' ? 'danger' : 'default'"
+      :loading="statusChangeLoading"
       @cancel="confirmOpen = false"
       @confirm="confirmStatusChange"
     />

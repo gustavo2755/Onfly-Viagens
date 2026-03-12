@@ -31,6 +31,8 @@ class IndexTravelOrderRequest extends FormRequest
             'user_id' => ['nullable', 'integer', 'exists:users,id'],
             'departure_from' => ['nullable', 'date'],
             'departure_to' => ['nullable', 'date', 'after_or_equal:departure_from'],
+            'created_from' => ['nullable', 'date'],
+            'created_to' => ['nullable', 'date', 'after_or_equal:created_from'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ];

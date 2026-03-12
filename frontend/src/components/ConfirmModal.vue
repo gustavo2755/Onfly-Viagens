@@ -19,6 +19,10 @@ defineProps({
     default: 'default',
     validator: (v) => ['default', 'danger'].includes(v),
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['cancel', 'confirm'])
@@ -71,15 +75,20 @@ const emit = defineEmits(['cancel', 'confirm'])
               Cancelar
             </button>
             <button
+              :disabled="loading"
               :class="[
-                'rounded-lg px-4 py-2 text-sm font-medium text-white transition',
+                'inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-white transition disabled:opacity-60',
                 variant === 'danger'
                   ? 'bg-red-600 hover:bg-red-700'
                   : 'bg-emerald-600 hover:bg-emerald-700',
               ]"
               @click="emit('confirm')"
             >
-              Confirmar
+              <span
+                v-if="loading"
+                class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+              />
+              {{ loading ? 'Processando...' : 'Confirmar' }}
             </button>
           </div>
         </div>

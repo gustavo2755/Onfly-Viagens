@@ -67,9 +67,13 @@ async function submit() {
 
         <button
           :disabled="authStore.loading"
-          class="w-full rounded px-4 py-2.5 text-white transition brand-bg hover:bg-sky-600 disabled:opacity-60"
+          class="inline-flex w-full items-center justify-center gap-2 rounded px-4 py-2.5 text-white transition brand-bg hover:bg-sky-600 disabled:opacity-60"
         >
-          Vamos!
+          <span
+            v-if="authStore.loading"
+            class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+          />
+          {{ authStore.loading ? 'Entrando...' : 'Vamos!' }}
         </button>
       </form>
     </section>

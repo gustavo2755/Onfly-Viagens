@@ -384,6 +384,26 @@ class TravelOrderApiTest extends TestCase
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_filter_by_created_at_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $older = TravelOrder::factory()->create();
+        $older->forceFill(['created_at' => now()->subDays(10), 'updated_at' => now()->subDays(10)])->save();
+        $middle = TravelOrder::factory()->create();
+        $middle->forceFill(['created_at' => now()->subDays(3), 'updated_at' => now()->subDays(3)])->save();
+        $newer = TravelOrder::factory()->create();
+        $newer->forceFill(['created_at' => now()->subDay(), 'updated_at' => now()->subDay()])->save();
+
+        $from = now()->subDays(5)->toDateString();
+        $to = now()->subDays(2)->toDateString();
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?created_from='.$from.'&created_to='.$to);
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $middle->id);
+    }
+
     public function test_filter_by_invalid_user_id_returns_422(): void
     {
         $admin = User::factory()->admin()->create();
@@ -400,6 +420,15 @@ class TravelOrderApiTest extends TestCase
         $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?departure_from=2026-03-10&departure_to=2026-03-01');
 
         $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['departure_to']]);
+    }
+
+    public function test_index_rejects_invalid_created_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?created_from=2026-03-20&created_to=2026-03-01');
+
+        $response->assertStatus(422)->assertJsonStructure(['message', 'errors' => ['created_to']]);
     }
 
     public function test_regular_user_lists_only_own_orders(): void

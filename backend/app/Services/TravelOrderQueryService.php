@@ -78,6 +78,8 @@ class TravelOrderQueryService implements TravelOrderQueryServiceInterface
             ->when(!empty($filters['requester_name']), fn (Builder $query) => $query->where('requester_name', 'like', $filters['requester_name'].'%'))
             ->when(!empty($filters['departure_from']), fn (Builder $query) => $query->whereDate('departure_date', '>=', $filters['departure_from']))
             ->when(!empty($filters['departure_to']), fn (Builder $query) => $query->whereDate('departure_date', '<=', $filters['departure_to']))
+            ->when(!empty($filters['created_from']), fn (Builder $query) => $query->whereDate('created_at', '>=', $filters['created_from']))
+            ->when(!empty($filters['created_to']), fn (Builder $query) => $query->whereDate('created_at', '<=', $filters['created_to']))
             ->orderByDesc('id');
     }
 

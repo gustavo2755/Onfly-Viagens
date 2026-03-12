@@ -42,6 +42,8 @@ const localFilters = reactive({
   user_id: props.modelValue.user_id || '',
   departure_from: props.modelValue.departure_from || '',
   departure_to: props.modelValue.departure_to || '',
+  created_from: props.modelValue.created_from || '',
+  created_to: props.modelValue.created_to || '',
 })
 
 watch(
@@ -53,6 +55,8 @@ watch(
     localFilters.user_id = value.user_id || ''
     localFilters.departure_from = value.departure_from || ''
     localFilters.departure_to = value.departure_to || ''
+    localFilters.created_from = value.created_from || ''
+    localFilters.created_to = value.created_to || ''
   },
   { deep: true }
 )
@@ -66,6 +70,8 @@ function buildEmitPayload() {
     user_id: localFilters.user_id,
     departure_from: localFilters.departure_from,
     departure_to: localFilters.departure_to,
+    created_from: localFilters.created_from,
+    created_to: localFilters.created_to,
     page: 1,
   }
 }
@@ -84,6 +90,8 @@ function clearFilters() {
   localFilters.user_id = ''
   localFilters.departure_from = ''
   localFilters.departure_to = ''
+  localFilters.created_from = ''
+  localFilters.created_to = ''
   emit('update:modelValue', {
     status: '',
     destination: '',
@@ -91,6 +99,8 @@ function clearFilters() {
     user_id: '',
     departure_from: '',
     departure_to: '',
+    created_from: '',
+    created_to: '',
     page: 1,
     per_page: props.modelValue.per_page || 10,
   })
@@ -154,6 +164,18 @@ function clearFilters() {
         <FilterDateInput
           :model-value="localFilters.departure_to"
           @update:model-value="(v) => { localFilters.departure_to = v; debouncedApply() }"
+        />
+      </FilterField>
+      <FilterField label="Pedido criado de" :icon="CalendarDaysIcon">
+        <FilterDateInput
+          :model-value="localFilters.created_from"
+          @update:model-value="(v) => { localFilters.created_from = v; debouncedApply() }"
+        />
+      </FilterField>
+      <FilterField label="Pedido criado até" :icon="CalendarDaysIcon">
+        <FilterDateInput
+          :model-value="localFilters.created_to"
+          @update:model-value="(v) => { localFilters.created_to = v; debouncedApply() }"
         />
       </FilterField>
     </div>

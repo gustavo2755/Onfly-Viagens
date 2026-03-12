@@ -7,6 +7,13 @@ import {
 import { PaperAirplaneIcon } from '@heroicons/vue/20/solid'
 import { computed, reactive } from 'vue'
 
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const emit = defineEmits(['submit'])
 
 const form = reactive({
@@ -124,10 +131,15 @@ function handleSubmit() {
     <div class="mt-6 flex justify-end">
       <button
         type="submit"
-        class="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700"
+        :disabled="loading"
+        class="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60"
       >
-        <PaperAirplaneIcon class="size-4" />
-        Criar pedido
+        <span
+          v-if="loading"
+          class="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white"
+        />
+        <PaperAirplaneIcon v-else class="size-4" />
+        {{ loading ? 'Criando...' : 'Criar pedido' }}
       </button>
     </div>
   </form>
