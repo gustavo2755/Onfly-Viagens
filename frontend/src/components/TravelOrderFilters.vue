@@ -8,6 +8,7 @@ import {
   UserIcon,
 } from '@heroicons/vue/24/outline'
 import { reactive, watch } from 'vue'
+import CollapsibleFilters from './CollapsibleFilters.vue'
 import FilterDateInput from './FilterDateInput.vue'
 import FilterField from './FilterField.vue'
 import FilterSelect from './FilterSelect.vue'
@@ -109,7 +110,7 @@ function clearFilters() {
 </script>
 
 <template>
-  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+  <CollapsibleFilters>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <FilterField label="Status" :icon="TagIcon">
         <FilterSelect
@@ -179,5 +180,5 @@ function clearFilters() {
         />
       </FilterField>
     </div>
-  </div>
+  </CollapsibleFilters>
 </template>
