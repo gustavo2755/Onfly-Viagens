@@ -6,11 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 /**
- * Collection de pedidos de viagem para resposta paginada.
+ * Collection de notificacoes para resposta paginada.
  */
-class TravelOrderCollection extends ResourceCollection
+class NotificationCollection extends ResourceCollection
 {
-    public $collects = TravelOrderResource::class;
+    public $collects = NotificationResource::class;
 
     /**
      * Converte a collection para array de resposta.

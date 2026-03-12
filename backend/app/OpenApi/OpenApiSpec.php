@@ -20,6 +20,7 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Auth', description: 'Autenticacao')]
 #[OA\Tag(name: 'Users', description: 'Usuarios')]
 #[OA\Tag(name: 'TravelOrders', description: 'Pedidos de viagem')]
+#[OA\Tag(name: 'Notifications', description: 'Notificacoes de alteracao de status')]
 #[OA\Schema(
     schema: 'AuthenticatedUser',
     properties: [
@@ -219,4 +220,49 @@ class OpenApiSpec
         ]
     )]
     public function listTravelOrderStatusLogs(): void {}
+
+    #[OA\Get(
+        path: '/api/notifications',
+        tags: ['Notifications'],
+        summary: 'Listar notificacoes do usuario',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'unread_only', in: 'query', required: false, schema: new OA\Schema(type: 'integer', enum: [0, 1]), description: '1 para apenas nao lidas'),
+            new OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'per_page', in: 'query', schema: new OA\Schema(type: 'integer')),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Lista paginada de notificacoes'),
+            new OA\Response(response: 401, description: 'Nao autenticado'),
+        ]
+    )]
+    public function listNotifications(): void {}
+
+    #[OA\Get(
+        path: '/api/notifications/unread-count',
+        tags: ['Notifications'],
+        summary: 'Contagem de notificacoes nao lidas',
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'Contagem retornada'),
+            new OA\Response(response: 401, description: 'Nao autenticado'),
+        ]
+    )]
+    public function unreadCount(): void {}
+
+    #[OA\Post(
+        path: '/api/notifications/{id}/read',
+        tags: ['Notifications'],
+        summary: 'Marcar notificacao como lida',
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'string', format: 'uuid'), description: 'UUID da notificacao'),
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Marcada como lida'),
+            new OA\Response(response: 401, description: 'Nao autenticado'),
+            new OA\Response(response: 404, description: 'Notificacao nao encontrada'),
+        ]
+    )]
+    public function markNotificationAsRead(): void {}
 }

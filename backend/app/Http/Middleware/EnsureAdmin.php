@@ -6,8 +6,14 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Middleware que exige usuario autenticado com role admin.
+ */
 class EnsureAdmin
 {
+    /**
+     * Bloqueia acesso se usuario nao for admin.
+     */
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user() || ! $request->user()->hasRole('admin')) {

@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 import LoginPage from '../pages/LoginPage.vue'
 import DashboardPage from '../pages/DashboardPage.vue'
+import NotificationsPage from '../pages/NotificationsPage.vue'
 import TravelOrdersPage from '../pages/TravelOrdersPage.vue'
 import CreateTravelOrderPage from '../pages/CreateTravelOrderPage.vue'
 import TravelOrderDetailPage from '../pages/TravelOrderDetailPage.vue'
@@ -12,6 +13,7 @@ const routes = [
   { path: '/travel-orders', name: 'travel-orders', component: TravelOrdersPage, meta: { requiresAuth: true } },
   { path: '/travel-orders/create', name: 'travel-orders-create', component: CreateTravelOrderPage, meta: { requiresAuth: true } },
   { path: '/travel-orders/:id', name: 'travel-orders-detail', component: TravelOrderDetailPage, meta: { requiresAuth: true } },
+  { path: '/notifications', name: 'notifications', component: NotificationsPage, meta: { requiresAuth: true } },
   { path: '/dashboard', name: 'dashboard', component: DashboardPage, meta: { requiresAuth: true, adminOnly: true } },
 ]
 

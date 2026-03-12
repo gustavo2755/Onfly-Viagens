@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\TravelOrderStatusEnum;
+use App\Support\Concerns\NormalizesTravelOrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -11,6 +11,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class TravelOrderResource extends JsonResource
 {
+    use NormalizesTravelOrderStatus;
+
     public function toArray(Request $request): array
     {
         return [
@@ -24,7 +26,7 @@ class TravelOrderResource extends JsonResource
             'return_date_br' => $this->return_date_br,
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),
-            'status' => $this->status instanceof TravelOrderStatusEnum ? $this->status->value : $this->status,
+            'status' => $this->normalizeStatus($this->status),
             'user' => $this->whenLoaded('user', fn () => new AuthenticatedUserResource($this->user)),
         ];
     }

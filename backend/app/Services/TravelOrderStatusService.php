@@ -6,7 +6,6 @@ use App\Enums\TravelOrderStatusEnum;
 use App\Exceptions\BusinessRuleException;
 use App\Models\TravelOrder;
 use App\Models\User;
-use App\Notifications\TravelOrderStatusChangedNotification;
 use App\Services\Contracts\TravelOrderStatusServiceInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 
@@ -31,7 +30,6 @@ class TravelOrderStatusService implements TravelOrderStatusServiceInterface
         }
 
         $travelOrder->update(['status' => $nextStatus->value]);
-        $travelOrder->user->notify(new TravelOrderStatusChangedNotification($travelOrder));
 
         return $travelOrder->fresh(['user']);
     }

@@ -7,8 +7,14 @@ use App\Http\Resources\TravelOrderStatusLogCollection;
 use App\Models\TravelOrderStatusLog;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador de logs de alteracao de status de pedidos.
+ */
 class TravelOrderStatusLogController extends Controller
 {
+    /**
+     * Lista logs de mudanca de status (apenas admin).
+     */
     public function index(Request $request): TravelOrderStatusLogCollection
     {
         if (! $request->user()->isAdmin()) {

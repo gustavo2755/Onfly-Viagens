@@ -7,8 +7,14 @@ use App\Http\Resources\UserListResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador de usuarios (admin).
+ */
 class UserController extends Controller
 {
+    /**
+     * Lista usuarios para filtro (apenas admin).
+     */
     public function index(Request $request)
     {
         if (! $request->user()->isAdmin()) {

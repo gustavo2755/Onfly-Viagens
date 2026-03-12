@@ -123,3 +123,24 @@ Item de `data`:
 ## Dashboard (data)
 
 - `total`, `requested`, `approved`, `cancelled` - contagens por status
+
+## Notificacoes (auth)
+
+Notificacoes de alteracao de status de pedidos. O usuario recebe notificacao quando o status do seu pedido e alterado por um admin.
+
+- `GET /api/notifications` (auth) - Lista notificacoes do usuario
+  - Query: `unread_only` (opcional, 1 para apenas nao lidas), `page`, `per_page`
+- `GET /api/notifications/unread-count` (auth) - Contagem de nao lidas
+- `POST /api/notifications/{id}/read` (auth) - Marcar como lida (UUID do id)
+
+### Estrutura do item de notificacao (data)
+
+- `id` - UUID
+- `type` - classe da notificacao
+- `data` - objeto com `travel_order_id`, `from_status`, `to_status`, `message`
+- `read_at` - ISO8601 ou null se nao lida
+- `created_at` - ISO8601
+
+### Unread count (data)
+
+- `count` - numero de notificacoes nao lidas

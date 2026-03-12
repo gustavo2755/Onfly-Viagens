@@ -10,8 +10,11 @@ class TravelOrderStatusChangedNotification extends Notification
 {
     use Queueable;
 
-    public function __construct(private readonly TravelOrder $travelOrder)
-    {
+    public function __construct(
+        private readonly TravelOrder $travelOrder,
+        private readonly string $fromStatus,
+        private readonly string $toStatus
+    ) {
     }
 
     public function via(object $notifiable): array
@@ -23,8 +26,9 @@ class TravelOrderStatusChangedNotification extends Notification
     {
         return [
             'travel_order_id' => $this->travelOrder->id,
-            'status' => $this->travelOrder->status->value,
-            'message' => 'Your travel order #'.$this->travelOrder->id.' is now '.$this->travelOrder->status->value.'.',
+            'from_status' => $this->fromStatus,
+            'to_status' => $this->toStatus,
+            'message' => 'Seu pedido #'.$this->travelOrder->id.' foi alterado de '.$this->fromStatus.' para '.$this->toStatus.'.',
         ];
     }
 }

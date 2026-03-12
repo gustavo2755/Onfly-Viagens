@@ -97,6 +97,17 @@
                 ],
                 "summary": "Listar usuarios (admin)",
                 "operationId": "b44a5b03c54e57e8a201cdef808e840d",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filtra por nome ou email (busca parcial)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Lista de usuarios"
@@ -130,6 +141,14 @@
                     {
                         "name": "destination",
                         "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "requester_name",
+                        "in": "query",
+                        "description": "Busca parcial no nome do solicitante",
                         "schema": {
                             "type": "string"
                         }
@@ -379,6 +398,116 @@
                     }
                 ]
             }
+        },
+        "/api/notifications": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Listar notificacoes do usuario",
+                "operationId": "00d4ec8eb980c6139272525f2a7929c5",
+                "parameters": [
+                    {
+                        "name": "unread_only",
+                        "in": "query",
+                        "description": "1 para apenas nao lidas",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada de notificacoes"
+                    },
+                    "401": {
+                        "description": "Nao autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Contagem de notificacoes nao lidas",
+                "operationId": "e5729dbcb8257fa7a9de9aeb26acf542",
+                "responses": {
+                    "200": {
+                        "description": "Contagem retornada"
+                    },
+                    "401": {
+                        "description": "Nao autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/notifications/{id}/read": {
+            "post": {
+                "tags": [
+                    "Notifications"
+                ],
+                "summary": "Marcar notificacao como lida",
+                "operationId": "056423391e098982085e432bf914be2c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID da notificacao",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Marcada como lida"
+                    },
+                    "401": {
+                        "description": "Nao autenticado"
+                    },
+                    "404": {
+                        "description": "Notificacao nao encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -509,6 +638,10 @@
         {
             "name": "TravelOrders",
             "description": "Pedidos de viagem"
+        },
+        {
+            "name": "Notifications",
+            "description": "Notificacoes de alteracao de status"
         }
     ],
     "security": [

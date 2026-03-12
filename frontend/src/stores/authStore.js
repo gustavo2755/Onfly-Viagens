@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 import { login, logout, me } from '../services/authService'
+import { useNotificationStore } from './notificationStore'
+import { useTravelOrderStore } from './travelOrderStore'
 
 const TOKEN_KEY = 'travel_orders_token'
 const USER_KEY = 'travel_orders_user'
@@ -15,6 +17,18 @@ export const useAuthStore = defineStore('auth', {
     isAdmin: (state) => state.user?.role === 'admin',
   },
   actions: {
+    resetDomainStores() {
+      const travelOrderStore = useTravelOrderStore(this.$pinia)
+      const notificationStore = useNotificationStore(this.$pinia)
+      travelOrderStore.$reset()
+      notificationStore.$reset()
+    },
+    clearSessionState() {
+      this.resetDomainStores()
+      this.token = ''
+      this.user = null
+      this.persist()
+    },
     persist() {
       if (this.token) {
         localStorage.setItem(TOKEN_KEY, this.token)
@@ -31,6 +45,7 @@ export const useAuthStore = defineStore('auth', {
     async signIn(payload) {
       this.loading = true
       try {
+        this.resetDomainStores()
         const data = await login(payload)
         this.token = data.data.token
         this.user = data.data.user
@@ -56,9 +71,7 @@ export const useAuthStore = defineStore('auth', {
           await logout()
         }
       } finally {
-        this.token = ''
-        this.user = null
-        this.persist()
+        this.clearSessionState()
       }
     },
   },

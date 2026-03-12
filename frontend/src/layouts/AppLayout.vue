@@ -1,7 +1,8 @@
 <script setup>
-import { ChartBarIcon, CodeBracketIcon, DocumentTextIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { BellIcon, ChartBarIcon, CodeBracketIcon, DocumentTextIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import NotificationBell from '../components/NotificationBell.vue'
 import { useAuthStore } from '../stores/authStore'
 
 const authStore = useAuthStore()
@@ -23,6 +24,7 @@ async function handleLogout() {
       <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <img src="/branding/logo-onfly-header.png" alt="Onfly logo" class="h-9 w-auto" />
         <div class="flex items-center gap-4">
+          <NotificationBell />
           <span class="text-sm">{{ authStore.user?.name }} ({{ authStore.user?.role }})</span>
           <button class="rounded bg-sky-700 px-3 py-1 text-sm hover:bg-sky-800" @click="handleLogout">
             Sair
@@ -48,6 +50,14 @@ async function handleLogout() {
         >
           <PlusIcon class="size-4" />
           Novo Pedido
+        </RouterLink>
+        <RouterLink
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-slate-600 transition hover:bg-slate-50 hover:text-sky-600"
+          :class="{ 'bg-slate-50 text-sky-600': $route.path === '/notifications' }"
+          to="/notifications"
+        >
+          <BellIcon class="size-4" />
+          Notificações
         </RouterLink>
         <RouterLink
           v-if="authStore.isAdmin"

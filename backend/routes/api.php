@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TravelOrderController;
 use App\Http\Controllers\Api\TravelOrderStatusLogController;
 use App\Http\Controllers\Api\UserController;
@@ -17,6 +18,9 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read']);
 });
 
 Route::middleware('auth:sanctum')->prefix('travel-orders')->group(function () {
