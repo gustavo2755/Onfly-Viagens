@@ -80,4 +80,133 @@ class TravelOrderStatusLogApiTest extends TestCase
             'to_status' => TravelOrderStatusEnum::Approved->value,
         ]);
     }
+
+    public function test_admin_can_filter_status_logs_by_travel_order_id(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $orderA = TravelOrder::factory()->create();
+        $orderB = TravelOrder::factory()->create();
+
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderA->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderB->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Cancelled->value,
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/travel-orders/status-logs?travel_order_id='.$orderA->id);
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.travel_order_id', $orderA->id);
+    }
+
+    public function test_admin_can_filter_status_logs_by_admin_user_id(): void
+    {
+        $adminA = User::factory()->admin()->create();
+        $adminB = User::factory()->admin()->create();
+        $order = TravelOrder::factory()->create();
+
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $order->id,
+            'admin_user_id' => $adminA->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $order->id,
+            'admin_user_id' => $adminB->id,
+            'from_status' => TravelOrderStatusEnum::Approved->value,
+            'to_status' => TravelOrderStatusEnum::Cancelled->value,
+        ]);
+
+        $response = $this->actingAs($adminA, 'sanctum')
+            ->getJson('/api/travel-orders/status-logs?admin_user_id='.$adminA->id);
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.admin_user_id', $adminA->id);
+    }
+
+    public function test_admin_can_filter_status_logs_by_to_status(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $orderA = TravelOrder::factory()->create();
+        $orderB = TravelOrder::factory()->create();
+
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderA->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+        TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderB->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Cancelled->value,
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/travel-orders/status-logs?to_status=approved');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.to_status', TravelOrderStatusEnum::Approved->value);
+    }
+
+    public function test_admin_can_filter_status_logs_by_created_at_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $orderA = TravelOrder::factory()->create();
+        $orderB = TravelOrder::factory()->create();
+
+        $olderLog = TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderA->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+        $newerLog = TravelOrderStatusLog::query()->create([
+            'travel_order_id' => $orderB->id,
+            'admin_user_id' => $admin->id,
+            'from_status' => TravelOrderStatusEnum::Requested->value,
+            'to_status' => TravelOrderStatusEnum::Cancelled->value,
+        ]);
+        $olderLog->forceFill([
+            'created_at' => now()->subDays(5),
+            'updated_at' => now()->subDays(5),
+        ])->save();
+        $newerLog->forceFill([
+            'created_at' => now()->subDay(),
+            'updated_at' => now()->subDay(),
+        ])->save();
+
+        $from = now()->subDays(2)->toDateString();
+        $to = now()->toDateString();
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson("/api/travel-orders/status-logs?created_from={$from}&created_to={$to}");
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.to_status', TravelOrderStatusEnum::Cancelled->value);
+    }
+
+    public function test_status_logs_filters_validate_input(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/travel-orders/status-logs?created_from=2026-03-20&created_to=2026-03-01');
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors' => ['created_to']]);
+    }
 }

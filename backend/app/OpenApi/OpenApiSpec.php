@@ -165,7 +165,7 @@ class OpenApiSpec
             new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Detalhe do pedido'),
+            new OA\Response(response: 200, description: 'Detalhes do pedido'),
             new OA\Response(response: 404, description: 'Nao encontrado'),
         ]
     )]

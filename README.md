@@ -57,7 +57,7 @@ Formulário para criar pedido: nome do solicitante, destino, data de saída e da
 
 ### Dashboard (admin)
 
-Visão geral com cards de totais (Total, Solicitado, Aprovado, Cancelado) e tabela das últimas alterações de status com colunas Pedido, Admin, De, Para, Quando e Ações (botão Detalhe).
+Visão geral com cards de totais (Total, Solicitado, Aprovado, Cancelado) e tabela das últimas alterações de status com colunas Pedido, Admin, De, Para, Quando e Ações (botão Detalhes).
 
 ![Dashboard](docs/images/dashboard-example.png)
 
@@ -193,7 +193,7 @@ php artisan migrate:fresh --seed   # reset completo
 | GET | `/api/users` | Lista usuários (admin) |
 | GET | `/api/travel-orders` | Lista pedidos (com filtros) |
 | POST | `/api/travel-orders` | Criar pedido |
-| GET | `/api/travel-orders/{id}` | Detalhe do pedido |
+| GET | `/api/travel-orders/{id}` | Detalhes do pedido |
 | PATCH | `/api/travel-orders/{id}/status` | Atualizar status (admin) |
 | GET | `/api/travel-orders/dashboard` | Contadores (admin) |
 | GET | `/api/travel-orders/status-logs` | Logs de mudança de status (admin) |
@@ -205,7 +205,7 @@ php artisan migrate:fresh --seed   # reset completo
 - **Login** – autenticação com token
 - **Pedidos** – listagem com filtros, paginação, busca
 - **Novo pedido** – formulário com validação em português
-- **Detalhe do pedido** – visualização e ações (admin)
+- **Detalhes do pedido** – visualização e ações (admin)
 - **Dashboard** – totais por status (admin)
 - Rotas protegidas por autenticação e role admin
 - Mensagens de validação em português; erros genéricos padronizados

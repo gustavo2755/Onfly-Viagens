@@ -26,7 +26,7 @@ onMounted(loadOrder)
 <template>
   <AppLayout>
     <div class="space-y-4">
-      <h2 class="text-xl font-semibold">Detalhe do pedido</h2>
+      <h2 class="text-xl font-semibold">Detalhes do pedido</h2>
 
       <LoadingSpinner v-if="travelOrderStore.loading" />
 

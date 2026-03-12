@@ -70,6 +70,9 @@ async function confirmStatusChange() {
     await loadData()
   } catch (error) {
     toast.error(getErrorMessage(error))
+    if (error?.response?.status === 409) {
+      await loadData()
+    }
   } finally {
     confirmOpen.value = false
   }

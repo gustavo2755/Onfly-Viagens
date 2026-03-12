@@ -11,6 +11,9 @@ const VALIDATION_TRANSLATIONS = {
   'The departure date field must be a date after or equal to today.': 'A data de saída deve ser igual ou posterior a hoje.',
   'The given data was invalid.': 'Os dados enviados são inválidos.',
   'The selected user id is invalid.': 'O usuário selecionado é inválido.',
+  'The selected travel order id is invalid.': 'O pedido de viagem selecionado é inválido.',
+  'The selected admin user id is invalid.': 'O administrador selecionado é inválido.',
+  'The created to field must be a date after or equal to created from.': 'A data "criado até" deve ser igual ou posterior a "criado de".',
   'The email field is required.': 'O e-mail é obrigatório.',
   'The password field is required.': 'A senha é obrigatória.',
   'The email field must be a valid email address.': 'O e-mail deve ser um endereço válido.',
@@ -26,6 +29,8 @@ const FIELD_NAMES = {
   email: 'e-mail',
   password: 'senha',
   user_id: 'usuário',
+  travel_order_id: 'pedido de viagem',
+  admin_user_id: 'administrador',
 }
 
 function translateValidationMessage(msg) {
@@ -55,6 +60,10 @@ export function getErrorMessage(error) {
 
   if (status === 422 && data?.message) {
     return translateValidationMessage(data.message)
+  }
+
+  if (status === 409 && data?.message) {
+    return data.message
   }
 
   return 'Ocorreu um erro, tente novamente mais tarde.'

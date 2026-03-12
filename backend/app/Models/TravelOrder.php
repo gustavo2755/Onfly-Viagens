@@ -16,6 +16,11 @@ class TravelOrder extends Model
     use FormatsDateBr;
     use HasFactory;
 
+    /**
+     * Campos permitidos para atribuicao em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'user_id',
         'requester_name',
@@ -39,16 +44,25 @@ class TravelOrder extends Model
         ];
     }
 
+    /**
+     * Accessor da data de saida no formato brasileiro.
+     */
     public function getDepartureDateBrAttribute(): ?string
     {
         return $this->formatDateBr($this->departure_date);
     }
 
+    /**
+     * Accessor da data de retorno no formato brasileiro.
+     */
     public function getReturnDateBrAttribute(): ?string
     {
         return $this->formatDateBr($this->return_date);
     }
 
+    /**
+     * Relacao com o usuario dono do pedido.
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

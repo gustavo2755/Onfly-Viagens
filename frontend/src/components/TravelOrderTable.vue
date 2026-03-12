@@ -50,7 +50,7 @@ const emit = defineEmits(['approve', 'cancel', 'open'])
                   @click="emit('open', item)"
                 >
                   <EyeIcon class="size-3.5" />
-                  Detalhe
+                  Detalhes
                 </button>
                 <button
                   v-if="isAdmin && item.status === 'requested'"

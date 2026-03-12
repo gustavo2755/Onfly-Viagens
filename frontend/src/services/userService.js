@@ -5,9 +5,9 @@ export async function listUsers() {
   return response.data
 }
 
-export async function searchUsers(search = '') {
-  const response = await api.get('/users', {
-    params: { search: search.trim() || undefined },
-  })
+export async function searchUsers(search = '', adminOnly = false) {
+  const params = { search: search.trim() || undefined }
+  if (adminOnly) params.admin_only = true
+  const response = await api.get('/users', { params })
   return response.data
 }

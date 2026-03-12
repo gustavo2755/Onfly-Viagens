@@ -31,4 +31,20 @@ class UpdateTravelOrderStatusRequest extends FormRequest
             ])],
         ];
     }
+
+    /**
+     * Adiciona validacao apos as regras: pedido deve estar em requested.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $order = $this->route('travelOrder');
+            if ($order && $order->status !== TravelOrderStatusEnum::Requested) {
+                $validator->errors()->add(
+                    'status',
+                    'O pedido já foi aprovado ou cancelado e não pode ser alterado.'
+                );
+            }
+        });
+    }
 }

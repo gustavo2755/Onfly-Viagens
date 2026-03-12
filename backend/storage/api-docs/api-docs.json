@@ -272,7 +272,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Detalhe do pedido"
+                        "description": "Detalhes do pedido"
                     },
                     "404": {
                         "description": "Nao encontrado"

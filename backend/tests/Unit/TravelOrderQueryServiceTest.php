@@ -38,6 +38,36 @@ class TravelOrderQueryServiceTest extends TestCase
         $this->assertSame('Paris', $paginator->items()[0]->destination);
     }
 
+    public function test_text_filters_use_prefix_matching(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create([
+            'destination' => 'Rio de Janeiro',
+            'requester_name' => 'Ana Maria',
+        ]);
+        TravelOrder::factory()->create([
+            'destination' => 'Janeiro City',
+            'requester_name' => 'Maria Ana',
+        ]);
+
+        $service = app(TravelOrderQueryServiceInterface::class);
+        $destinationPaginator = $service->list($admin, [
+            'destination' => 'Jane',
+            'per_page' => 15,
+            'page' => 1,
+        ]);
+        $requesterPaginator = $service->list($admin, [
+            'requester_name' => 'Maria',
+            'per_page' => 15,
+            'page' => 1,
+        ]);
+
+        $this->assertCount(1, $destinationPaginator->items());
+        $this->assertSame('Janeiro City', $destinationPaginator->items()[0]->destination);
+        $this->assertCount(1, $requesterPaginator->items());
+        $this->assertSame('Maria Ana', $requesterPaginator->items()[0]->requester_name);
+    }
+
     public function test_regular_user_list_only_returns_own_orders(): void
     {
         $user = User::factory()->create();

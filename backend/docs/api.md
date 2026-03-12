@@ -24,6 +24,7 @@ Token Bearer via Sanctum. Enviar header: `Authorization: Bearer {token}`.
 
 - `GET /api/users` (auth, admin) - Lista usuarios para filtro de pedidos
   - Query: `search` (opcional) - filtra por nome ou email (busca parcial, case-insensitive)
+  - Query: `admin_only` (opcional, 1) - retorna apenas usuarios com role admin (ex.: filtro de admin nos logs)
 
 ## Travel Orders
 
@@ -40,7 +41,10 @@ Token Bearer via Sanctum. Enviar header: `Authorization: Bearer {token}`.
 - `approved` - aprovado
 - `cancelled` - cancelado
 
-Pedido aprovado nao pode ser cancelado.
+**Regras de alteracao de status:**
+- Apenas pedidos em `requested` podem ter o status alterado
+- Pedidos em `approved` ou `cancelled` nao podem ser alterados (422)
+- Lock pessimista (MySQL `FOR UPDATE NOWAIT`): se outro admin estiver alterando ou ja alterou, retorna 409 imediatamente (sem esperar)
 
 ## Payloads
 
@@ -78,6 +82,14 @@ Validacao: `requester_name` 3-120 chars, `destination` 2-120 chars, `return_date
 
 Valores permitidos: `approved`, `cancelled`. Apenas admin.
 
+**Validacao (UpdateTravelOrderStatusRequest):**
+- Pedido deve estar em `requested`; senao retorna 422 com `errors.status`: "O pedido ja foi aprovado ou cancelado e nao pode ser alterado."
+
+**Concorrencia:**
+- Transacao garante atomicidade (update + log + notificacao)
+- Lock pessimista evita dois admins alterarem simultaneamente
+- Se outro admin ja estiver alterando ou ja alterou: **409 Conflict** com `data` (pedido atualizado) e `code: "concurrent_modification"` para o front atualizar
+
 ## Filtros (GET /api/travel-orders)
 
 - `status` - requested | approved | cancelled
@@ -92,7 +104,8 @@ Valores permitidos: `approved`, `cancelled`. Apenas admin.
 - Sucesso: `{ "message": "...", "data": ... }`
 - Paginado: `{ "message": "...", "data": [...], "meta": { "current_page", "last_page", "per_page", "total" }, "links": {...} }`
 - Validacao 422: `{ "message": "The given data was invalid.", "errors": { "campo": ["mensagem"] } }`
-- Regra de negocio 422: `{ "message": "Approved travel orders cannot be cancelled." }`
+- Status nao alteravel 422: `{ "message": "...", "errors": { "status": ["O pedido ja foi aprovado ou cancelado e nao pode ser alterado."] } }`
+- Concorrencia 409: `{ "message": "Outro administrador ja esta alterando ou alterou este pedido.", "code": "concurrent_modification", "data": { ...TravelOrder } }`
 - Nao autorizado 401: `{ "message": "Unauthenticated." }`
 - Sem permissao 403: `{ "message": "This action is unauthorized." }`
 - Nao encontrado 404: `{ "message": "No query results for model..." }`
@@ -103,6 +116,7 @@ Endpoint: `GET /api/travel-orders/status-logs`
 
 - Apenas admin pode consultar.
 - Retorno paginado ordenado do mais recente para o mais antigo.
+- Filtros: `travel_order_id`, `admin_user_id`, `to_status`, `created_from`, `created_to`, `per_page`
 
 Item de `data`:
 
@@ -144,3 +158,24 @@ Notificacoes de alteracao de status de pedidos. O usuario recebe notificacao qua
 ### Unread count (data)
 
 - `count` - numero de notificacoes nao lidas
+
+---
+
+## Alteracao de status - detalhes tecnicos
+
+### Fluxo
+
+1. **UpdateTravelOrderStatusRequest** - Valida que o pedido esta em `requested` (via `withValidator`). Se nao, retorna 422.
+2. **TravelOrderStatusService** - Dentro de transacao:
+   - Tenta lock `FOR UPDATE NOWAIT` (MySQL) no registro
+   - Se o lock falhar (outro admin alterando): busca pedido atualizado e lanca `ConcurrentModificationException`
+   - Verifica novamente se status e `requested` (dupla checagem apos lock)
+   - Executa `update` (dispara observer: log, notificacao, cache)
+3. **TravelOrderController** - Captura `ConcurrentModificationException` e retorna 409 com `data` (pedido atualizado).
+
+### Arquivos envolvidos
+
+- `UpdateTravelOrderStatusRequest` - validacao de status `requested`
+- `TravelOrderStatusService` - transacao, lock, regras de negocio
+- `ConcurrentModificationException` - excecao com `TravelOrder` para resposta 409
+- `TravelOrderController::updateStatus` - tratamento da excecao

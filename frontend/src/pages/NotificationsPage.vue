@@ -134,7 +134,7 @@ onMounted(loadData)
                       @click="openDetail(n.data?.travel_order_id)"
                     >
                       <EyeIcon class="size-3.5" />
-                      Detalhe
+                      Detalhes
                     </button>
                   </div>
                 </td>

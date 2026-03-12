@@ -32,6 +32,6 @@ export async function getDashboard() {
 }
 
 export async function listStatusLogs(params = {}) {
-  const response = await api.get('/travel-orders/status-logs', { params })
+  const response = await api.get('/travel-orders/status-logs', { params: cleanParams(params) })
   return response.data
 }

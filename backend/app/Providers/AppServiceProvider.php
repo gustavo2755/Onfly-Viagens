@@ -10,9 +10,11 @@ use App\Services\AuthService;
 use App\Services\Contracts\AdminCacheInvalidationServiceInterface;
 use App\Services\Contracts\AuthServiceInterface;
 use App\Services\Contracts\TravelOrderQueryServiceInterface;
+use App\Services\Contracts\TravelOrderStatusLogQueryServiceInterface;
 use App\Services\Contracts\TravelOrderServiceInterface;
 use App\Services\Contracts\TravelOrderStatusServiceInterface;
 use App\Services\TravelOrderQueryService;
+use App\Services\TravelOrderStatusLogQueryService;
 use App\Services\TravelOrderService;
 use App\Services\TravelOrderStatusService;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TravelOrderServiceInterface::class, TravelOrderService::class);
         $this->app->singleton(TravelOrderStatusServiceInterface::class, TravelOrderStatusService::class);
         $this->app->singleton(TravelOrderQueryServiceInterface::class, TravelOrderQueryService::class);
+        $this->app->singleton(TravelOrderStatusLogQueryServiceInterface::class, TravelOrderStatusLogQueryService::class);
     }
 
     public function boot(): void

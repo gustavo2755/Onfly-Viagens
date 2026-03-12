@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->prefix('travel-orders')->group(function () {
     Route::get('/', [TravelOrderController::class, 'index']);
     Route::post('/', [TravelOrderController::class, 'store']);
     Route::get('/dashboard', [TravelOrderController::class, 'dashboard']);
-    Route::get('/status-logs', [TravelOrderStatusLogController::class, 'index']);
+    Route::get('/status-logs', [TravelOrderStatusLogController::class, 'index'])->middleware('admin');
     Route::get('/{id}', [TravelOrderController::class, 'show']);
     Route::patch('/{travelOrder}/status', [TravelOrderController::class, 'updateStatus']);
 });

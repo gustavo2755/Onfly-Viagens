@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\TravelOrderStatusEnum;
+use App\Exceptions\ConcurrentModificationException;
 use App\Models\TravelOrder;
 use App\Models\User;
+use App\Services\Contracts\TravelOrderStatusServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -204,7 +206,7 @@ class TravelOrderApiTest extends TestCase
         ]);
     }
 
-    public function test_admin_cannot_cancel_approved_order(): void
+    public function test_admin_cannot_update_approved_order(): void
     {
         $admin = User::factory()->admin()->create();
         $owner = User::factory()->create();
@@ -214,7 +216,24 @@ class TravelOrderApiTest extends TestCase
             'status' => TravelOrderStatusEnum::Cancelled->value,
         ]);
 
-        $response->assertStatus(422)->assertJsonPath('message', 'Approved travel orders cannot be cancelled.');
+        $response->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors' => ['status']])
+            ->assertJsonPath('errors.status.0', 'O pedido já foi aprovado ou cancelado e não pode ser alterado.');
+    }
+
+    public function test_admin_cannot_update_cancelled_order(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $owner = User::factory()->create();
+        $travelOrder = TravelOrder::factory()->for($owner)->create(['status' => TravelOrderStatusEnum::Cancelled->value]);
+
+        $response = $this->actingAs($admin, 'sanctum')->patchJson('/api/travel-orders/'.$travelOrder->id.'/status', [
+            'status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonStructure(['message', 'errors' => ['status']])
+            ->assertJsonPath('errors.status.0', 'O pedido já foi aprovado ou cancelado e não pode ser alterado.');
     }
 
     public function test_admin_can_cancel_requested_order(): void
@@ -278,6 +297,20 @@ class TravelOrderApiTest extends TestCase
             ->assertJsonPath('data.0.destination', 'Sao Paulo');
     }
 
+    public function test_filter_by_destination_uses_prefix_matching(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['destination' => 'Rio de Janeiro']);
+        TravelOrder::factory()->create(['destination' => 'Janeiro City']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?destination=Jane');
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.destination', 'Janeiro City');
+    }
+
     public function test_filter_by_requester_name(): void
     {
         $admin = User::factory()->admin()->create();
@@ -290,6 +323,20 @@ class TravelOrderApiTest extends TestCase
         $response->assertOk()
             ->assertJsonStructure(['message', 'data', 'meta', 'links'])
             ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filter_by_requester_name_uses_prefix_matching(): void
+    {
+        $admin = User::factory()->admin()->create();
+        TravelOrder::factory()->create(['requester_name' => 'Ana Maria']);
+        TravelOrder::factory()->create(['requester_name' => 'Maria Ana']);
+
+        $response = $this->actingAs($admin, 'sanctum')->getJson('/api/travel-orders?requester_name=Maria');
+
+        $response->assertOk()
+            ->assertJsonStructure(['message', 'data', 'meta', 'links'])
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.requester_name', 'Maria Ana');
     }
 
     public function test_filter_by_user_id_admin_only(): void
@@ -398,5 +445,33 @@ class TravelOrderApiTest extends TestCase
     public function test_unauthenticated_requests_are_blocked(): void
     {
         $this->getJson('/api/travel-orders')->assertStatus(401);
+    }
+
+    public function test_concurrent_modification_returns_409_with_fresh_data(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $owner = User::factory()->create();
+        $travelOrder = TravelOrder::factory()->for($owner)->create([
+            'status' => TravelOrderStatusEnum::Requested->value,
+        ]);
+        $fresh = $travelOrder->fresh(['user']);
+
+        $this->mock(TravelOrderStatusServiceInterface::class)
+            ->shouldReceive('updateStatus')
+            ->once()
+            ->andThrow(new ConcurrentModificationException(
+                'Outro administrador já está alterando ou alterou este pedido.',
+                $fresh
+            ));
+
+        $response = $this->actingAs($admin, 'sanctum')->patchJson('/api/travel-orders/'.$travelOrder->id.'/status', [
+            'status' => TravelOrderStatusEnum::Approved->value,
+        ]);
+
+        $response->assertStatus(409)
+            ->assertJsonPath('message', 'Outro administrador já está alterando ou alterou este pedido.')
+            ->assertJsonPath('code', 'concurrent_modification')
+            ->assertJsonPath('data.id', $travelOrder->id)
+            ->assertJsonPath('data.status', TravelOrderStatusEnum::Requested->value);
     }
 }

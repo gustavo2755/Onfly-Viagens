@@ -10,6 +10,10 @@ const props = defineProps({
     type: [String, Number],
     default: '',
   },
+  adminOnly: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -35,7 +39,7 @@ const displayValue = computed(() => {
 async function fetchUsers(term) {
   loading.value = true
   try {
-    const data = await searchUsers(term)
+    const data = await searchUsers(term, props.adminOnly)
     options.value = data.data || []
   } catch {
     options.value = []
@@ -87,7 +91,7 @@ function onFocus() {
         <ComboboxInput
           :display-value="() => displayValue"
           class="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-          placeholder="Buscar usuário..."
+          :placeholder="adminOnly ? 'Buscar admin...' : 'Buscar usuário...'"
           @change="onInput"
           @focus="onFocus"
         />

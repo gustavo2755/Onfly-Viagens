@@ -23,6 +23,10 @@ class UserController extends Controller
 
         $query = User::query()->orderBy('name');
 
+        if ($request->boolean('admin_only')) {
+            $query->role('admin');
+        }
+
         $search = $request->query('search');
         if (is_string($search) && $search !== '') {
             $term = '%' . $search . '%';

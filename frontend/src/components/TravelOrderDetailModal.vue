@@ -35,7 +35,7 @@ const emit = defineEmits(['close'])
           aria-labelledby="detail-title"
         >
           <div class="relative flex items-center justify-center">
-            <h3 id="detail-title" class="text-lg font-semibold text-slate-800">Detalhe do pedido</h3>
+            <h3 id="detail-title" class="text-lg font-semibold text-slate-800">Detalhes do pedido</h3>
             <button
               class="absolute right-0 top-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               aria-label="Fechar"

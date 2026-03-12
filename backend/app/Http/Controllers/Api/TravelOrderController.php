@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ConcurrentModificationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\IndexTravelOrderRequest;
 use App\Http\Requests\StoreTravelOrderRequest;
@@ -14,6 +15,7 @@ use App\Services\Contracts\TravelOrderServiceInterface;
 use App\Services\Contracts\TravelOrderStatusServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -81,15 +83,25 @@ class TravelOrderController extends Controller
     /**
      * Atualiza status de um pedido (somente admin).
      */
-    public function updateStatus(UpdateTravelOrderStatusRequest $request, TravelOrder $travelOrder): TravelOrderResource
+    public function updateStatus(UpdateTravelOrderStatusRequest $request, TravelOrder $travelOrder): TravelOrderResource|JsonResponse
     {
         $this->authorize('updateStatus', $travelOrder);
 
-        $updated = $this->travelOrderStatusService->updateStatus(
-            $request->user(),
-            $travelOrder,
-            $request->validated('status')
-        );
+        try {
+            $updated = $this->travelOrderStatusService->updateStatus(
+                $request->user(),
+                $travelOrder,
+                $request->validated('status')
+            );
+        } catch (ConcurrentModificationException $e) {
+            return (new TravelOrderResource($e->getTravelOrder()))
+                ->additional([
+                    'message' => $e->getMessage(),
+                    'code' => 'concurrent_modification',
+                ])
+                ->response()
+                ->setStatusCode(Response::HTTP_CONFLICT);
+        }
 
         return (new TravelOrderResource($updated))->additional([
             'message' => 'Travel order status updated successfully.',
