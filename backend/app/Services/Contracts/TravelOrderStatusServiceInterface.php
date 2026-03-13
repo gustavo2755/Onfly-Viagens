@@ -13,5 +13,5 @@ interface TravelOrderStatusServiceInterface
     /**
      * Atualiza status de um pedido conforme regras de negocio.
      */
-    public function updateStatus(User $adminUser, TravelOrder $travelOrder, string $status): TravelOrder;
+    public function updateStatus(TravelOrder $travelOrder, string $status): TravelOrder;
 }

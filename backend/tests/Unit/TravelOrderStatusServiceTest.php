@@ -21,14 +21,15 @@ class TravelOrderStatusServiceTest extends TestCase
     {
         Notification::fake();
 
-        $admin = User::factory()->admin()->create();
+        User::factory()->admin()->create();
+
         $owner = User::factory()->create();
         $travelOrder = TravelOrder::factory()->for($owner)->create([
             'status' => TravelOrderStatusEnum::Requested->value,
         ]);
 
         $service = app(TravelOrderStatusServiceInterface::class);
-        $updated = $service->updateStatus($admin, $travelOrder, TravelOrderStatusEnum::Approved->value);
+        $updated = $service->updateStatus($travelOrder, TravelOrderStatusEnum::Approved->value);
 
         $this->assertSame(TravelOrderStatusEnum::Approved, $updated->status);
         Notification::assertSentTo($owner, TravelOrderStatusChangedNotification::class);
@@ -38,44 +39,32 @@ class TravelOrderStatusServiceTest extends TestCase
     {
         $this->expectException(BusinessRuleException::class);
 
-        $admin = User::factory()->admin()->create();
+        User::factory()->admin()->create();
+
         $owner = User::factory()->create();
         $travelOrder = TravelOrder::factory()->for($owner)->create([
             'status' => TravelOrderStatusEnum::Approved->value,
         ]);
 
         $service = app(TravelOrderStatusServiceInterface::class);
-        $service->updateStatus($admin, $travelOrder, TravelOrderStatusEnum::Cancelled->value);
+        $service->updateStatus($travelOrder, TravelOrderStatusEnum::Cancelled->value);
     }
 
     public function test_admin_can_cancel_requested_order(): void
     {
         Notification::fake();
 
-        $admin = User::factory()->admin()->create();
+        User::factory()->admin()->create();
+
         $owner = User::factory()->create();
         $travelOrder = TravelOrder::factory()->for($owner)->create([
             'status' => TravelOrderStatusEnum::Requested->value,
         ]);
 
         $service = app(TravelOrderStatusServiceInterface::class);
-        $updated = $service->updateStatus($admin, $travelOrder, TravelOrderStatusEnum::Cancelled->value);
+        $updated = $service->updateStatus($travelOrder, TravelOrderStatusEnum::Cancelled->value);
 
         $this->assertSame(TravelOrderStatusEnum::Cancelled, $updated->status);
         Notification::assertSentTo($owner, TravelOrderStatusChangedNotification::class);
-    }
-
-    public function test_non_admin_cannot_update_status(): void
-    {
-        $this->expectException(AuthorizationException::class);
-
-        $user = User::factory()->create();
-        $owner = User::factory()->create();
-        $travelOrder = TravelOrder::factory()->for($owner)->create([
-            'status' => TravelOrderStatusEnum::Requested->value,
-        ]);
-
-        $service = app(TravelOrderStatusServiceInterface::class);
-        $service->updateStatus($user, $travelOrder, TravelOrderStatusEnum::Approved->value);
     }
 }

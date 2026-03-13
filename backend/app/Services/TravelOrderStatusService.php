@@ -20,20 +20,19 @@ class TravelOrderStatusService implements TravelOrderStatusServiceInterface
     /**
      * Atualiza status respeitando regras de autorizacao e negocio.
      */
-    public function updateStatus(User $adminUser, TravelOrder $travelOrder, string $status): TravelOrder
+    public function updateStatus(TravelOrder $travelOrder, string $status): TravelOrder
     {
-        if (!$adminUser->isAdmin()) {
-            throw new AuthorizationException('This action is unauthorized.');
-        }
-
         $nextStatus = TravelOrderStatusEnum::from($status);
 
         return DB::transaction(function () use ($travelOrder, $nextStatus) {
             $locked = $this->acquireLockOrFail($travelOrder->id);
+
             if ($locked->status !== TravelOrderStatusEnum::Requested) {
                 throw new BusinessRuleException('O pedido já foi aprovado ou cancelado e não pode ser alterado.');
             }
+
             $locked->update(['status' => $nextStatus->value]);
+            
             return $locked->fresh(['user']);
         });
     }

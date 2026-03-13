@@ -89,7 +89,6 @@ class TravelOrderController extends Controller
 
         try {
             $updated = $this->travelOrderStatusService->updateStatus(
-                $request->user(),
                 $travelOrder,
                 $request->validated('status')
             );
